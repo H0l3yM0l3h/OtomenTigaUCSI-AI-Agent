@@ -1,172 +1,139 @@
-# UCSI Agentic AI CTF 2026 — Agent Harness
+# OtomenTiga CTF Agent
 
-> **Autonomous AI agent that analyzes and solves Capture The Flag (CTF) challenges**  
-> Built for the UCSI Agentic AI Hackathon 2026
+> One challenge prompt in. Tool-driven investigation, exploit execution, and a reproducible flag path out.
 
----
+Built by **Team OtomenTiga** for the **UCSI Agentic AI CTF Hackathon 2026**.
 
-## 🏆 Results
+**8 captured flags** · **13 callable tools** · **4 LLM providers** · **2 execution modes** · **1 reusable agent workflow**
 
-| # | Challenge | Category | Technique | Flag |
-|---|-----------|----------|-----------|------|
-| 1 | Grimoire Heap | PWN | UAF + tcache poisoning | `UCSI26{grimoire_uaf_tcache_win_6e7291e6}` |
-| 2 | Sandworm VM | PWN | VM OOB escape | `UCSI26{sandworm_vm_oob_escape_025a2ef7}` |
-| 3 | Saturn Exchange | WEB | Async race condition | `UCSI26{4sync_settlement_r4c3_110cbe1e}` |
-| 4 | Pony Express 500 | WEB | Handlebars AST injection (CVE-2026-33937) | `UCSI26{cve-2026-33937_h4ndl3b4rs_4st_1nj3ct10n}` |
-| 5 | Temporary | WEB | Path traversal + templates | `UCSI26{cve-2026-44705_tmp_tr4v3rs4l_g4in_1s_f0r3v3r}` |
-| 6 | OldStock Router | FIRM | Firmware SquashFS extract | `UCSI26{0ld5t0ck_fw_b4ckup_l34k}` |
-| 7 | StaffDesk | WEB | GraphQL IDOR + Account Reset | `UCSI26{gr4phql_1d0r_2_admin_t4k30v3r}` |
+[Results](#captured-flags) · [Judge demo](#judge-demo) · [How it works](#how-it-works) · [Setup](#setup) · [Usage](#usage) · [Writeups](docs/writeup.md) · [Slides](presentation/index.html)
 
 ---
 
-## 🏗️ Architecture
+## Why this project stands out
 
-```
-┌─────────────────────────────────────────────────┐
-│                   CLI (run.py)                   │
-├─────────────────────────────────────────────────┤
-│              Agent Core (ReAct Loop)             │
-│         analyze → plan → exploit → verify        │
-├──────────┬──────────┬───────────┬───────────────┤
-│ Binary   │ Code     │ Network   │ Web           │
-│ Analysis │ Executor │ Client    │ Tools         │
-│ (r2pipe) │ (subproc)│ (socket)  │ (requests)    │
-├──────────┴──────────┴───────────┴───────────────┤
-│            LLM Provider (Pluggable)              │
-│   OpenAI  │  Anthropic  │  Ollama  │  Groq      │
-└─────────────────────────────────────────────────┘
-```
+This is not a chat wrapper around an LLM. It is a working CTF harness that lets a model inspect evidence, choose security tools, execute actions, observe results, and iterate through a LangGraph ReAct loop.
 
-The agent uses a **ReAct (Reasoning + Acting)** loop built with **LangGraph**:
+| Capability | What the project delivers |
+|---|---|
+| **Agentic execution** | The LLM selects and invokes 13 file, web, network, binary-analysis, encoding, and code-execution tools. |
+| **Broad CTF coverage** | Recorded solutions span web exploitation, binary exploitation, firmware analysis, race conditions, GraphQL authorization, template injection, and Java deserialization. |
+| **Two execution modes** | Use the autonomous agent for discovery, then replay a captured technique with a deterministic challenge solver. |
+| **Provider freedom** | Switch between OpenAI, Anthropic, Ollama, and Groq without changing the agent workflow. |
+| **Reproducible proof** | Eight captured flags are registered in the CLI and backed by challenge-specific solver modules. |
+| **Local-first option** | Ollama can run the reasoning model locally, which is useful for privacy, cost control, and offline experimentation. |
 
-1. **Observe** — Read challenge description, examine files, probe services
-2. **Analyze** — Identify vulnerability class and attack surface
-3. **Plan** — Formulate exploitation strategy
-4. **Exploit** — Execute attack using available tools
-5. **Verify** — Extract and validate the flag (`UCSI26{...}`)
-
-### 🔁 Detailed Agent Execution Flow
-
-The harness orchestrates the solver loop through a state transition model:
-```
-           ┌──────────────────────┐
-           │     1. Observe       │ ◄─── (Check challenge descriptions & distfiles)
-           └──────────┬───────────┘
-                      ▼
-           ┌──────────────────────┐
-           │     2. Analyze       │ ◄─── (Categorize & run checksec / r2 analysis)
-           └──────────┬───────────┘
-                      ▼
-           ┌──────────────────────┐
-           │      3. Plan         │ ◄─── (Formulate binary or HTTP exploit payload)
-           └──────────┬───────────┘
-                      ▼
-           ┌──────────────────────┐
- ┌────────►│     4. Exploit       ├────────┐
- │         └──────────────────────┘        │
- │                    │                    │
- │ (No flag           ▼ (Tool Call)        │ (Flag found
- │  & iterations <   ┌──────────────────────┐      │  or max iterations)
- │  MAX_ITERATIONS)  │   Execute Tool &     │      │
- └───────────────────┤   Check for Loop     │      ▼
-                     └──────────┬───────────┘ ┌──────────────┐
-                                ▼             │   5. Verify  │
-                     [ Anti-Loop Check ] ────►│   & Extract  │
-                                              └──────────────┘
-```
-
-### 🐳 Isolation & Sandboxed Execution
-To safely run generated exploit scripts (which may contain arbitrary commands, shellcode, or unsafe networking logic), the harness uses a **Docker Sandbox** isolation model:
-- **Workspace Bindings:** Mounts the solver workspace (Read/Write) and challenge binaries/distfiles (Read-Only).
-- **Execution Controls:** Configures custom limits (default: 4GB memory, 2 CPUs) and executes commands via the sandbox API.
-- **Degradation Fallback:** Automatically falls back to local execution with custom timeout protections if Docker is not available in the host environment.
-
-### ⚠️ Loop Detection & Prevention
-To prevent LLMs from entering infinite execution loops (e.g. calling `read_file` repeatedly when a file is missing or a tool fails), the harness implements a **hash-based loop detector**:
-1. Keeps a sliding window of recent tool names and argument hashes.
-2. Injects a warning prompt (`⚠️ LOOP DETECTED...`) after 3 consecutive identical operations, instructing the LLM to change its approach.
-3. Aborts and cleans up the run if identical calls repeat 5 times to prevent token waste.
+The result is a practical loop from **reasoning** to **real tool use** to **repeatable exploitation**, rather than a one-off answer that cannot be demonstrated again.
 
 ---
 
-## 📋 Project Structure
+## Judge demo
 
-```
-├── run.py                        # CLI entry point
-├── agent/
-│   ├── core.py                   # ReAct agent loop (LangGraph)
-│   ├── llm.py                    # LLM provider abstraction
-│   ├── prompts.py                # CTF-specialized system prompts
-│   ├── config.py                 # Configuration management
-│   ├── utils.py                  # Flag extraction, hex utilities
-│   └── tools/
-│       ├── binary_analysis.py    # r2pipe / objdump / pwntools
-│       ├── code_executor.py      # Sandboxed Python execution
-│       ├── network_client.py     # TCP/UDP interaction
-│       ├── web_tools.py          # HTTP + race conditions
-│       └── file_tools.py         # File I/O + encoding
-├── solvers/
-│   ├── grimoire_heap.py          # PWN: UAF + tcache poisoning
-│   ├── sandworm_vm.py            # PWN: VM OOB escape
-│   ├── saturn_exchange.py        # WEB: Async race condition
-│   └── pony_express.py           # WEB: Handlebars AST injection
-├── docs/
-│   ├── writeup.md                # Full challenge writeups
-│   └── architecture.md           # Agent design documentation
-├── presentation/
-│   └── index.html                # Reveal.js slide deck
-├── requirements.txt
-├── .env.example
-└── .gitignore
-```
+> **The 20-second pitch:** Most AI security demos stop at advice. OtomenTiga CTF Agent closes the loop: the model reasons, calls real security tools, adapts to their output, captures the exploit path, and turns the win into a solver that judges can replay.
 
----
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Python 3.11+
-- An LLM API key (OpenAI, Anthropic, Groq) or local Ollama instance
-
-### Installation
+From a configured environment, these commands show the complete story:
 
 ```bash
-# Clone the repository
-git clone https://github.com/<your-username>/ucsi-ctf-agent-2026.git
-cd ucsi-ctf-agent-2026
+# 1. Show the captured challenge portfolio
+python run.py challenges
 
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate        # Linux/macOS
-# or: venv\Scripts\activate     # Windows
+# 2. Show the pluggable reasoning backends
+python run.py providers
 
-# Install dependencies
-pip install -r requirements.txt
+# 3. Replay a real exploit against an authorized, live CTF target
+python run.py solver saturn-exchange
 
-# Configure your LLM provider
-cp .env.example .env
-# Edit .env with your API key
+# 4. Launch the autonomous agent on a new challenge
+python run.py solve --challenge "Describe the challenge here" --category web --host TARGET_HOST --port TARGET_PORT
 ```
 
-### Usage
+### Showcase: Saturn Exchange
+
+We independently re-ran the Saturn solver against the live challenge service and reproduced the full exploit:
+
+```text
+POST /api/reset
+        ↓
+balance = 1 BTC, pending = 0
+        ↓
+queue multiple 0.6 BTC withdrawals before batch settlement
+        ↓
+pending withdrawals are accepted without reserving the balance
+        ↓
+settlement subtracts more than the account owns
+        ↓
+balance = -0.8 BTC, pending = 0
+        ↓
+UCSI26{4sync_settlement_r4c3_110cbe1e}
+```
+
+This is a strong demo of the platform because it combines API discovery, session handling, concurrent HTTP requests, timing-sensitive settlement, state polling, and flag extraction. Two rapid `0.6 BTC` requests are enough to make the balance negative; the replay solver sends three requests to trigger the condition reliably.
 
 ```bash
-# Solve a challenge with the AI agent
-python run.py solve \
-  --challenge "A banished spell is supposed to be gone. Is it really?" \
-  --category pwn \
-  --host 52.76.96.108 \
-  --port 9005
+python run.py solver saturn-exchange
+```
 
-# Use a specific LLM provider
+Expected success evidence:
+
+```text
+Initial balance: 1 BTC
+Total withdrawal: 1.8 BTC
+Balance: -0.8, Pending: 0
+FLAG FOUND: UCSI26{4sync_settlement_r4c3_110cbe1e}
+```
+
+> Remote replay requires the competition target to remain online. Only run the harness against systems you are authorized to test.
+
+---
+
+## Captured flags
+
+The repository currently records **eight challenge captures** across three major CTF domains.
+
+| # | Challenge | Domain | Exploit technique | Reproducible solver |
+|---:|---|---|---|---|
+| 1 | Grimoire Heap | PWN | Use-after-free and tcache poisoning | [`grimoire_heap.py`](solvers/grimoire_heap.py) |
+| 2 | Sandworm VM | PWN | Virtual-machine out-of-bounds escape | [`sandworm_vm.py`](solvers/sandworm_vm.py) |
+| 3 | Saturn Exchange | WEB | Asynchronous settlement race | [`saturn_exchange.py`](solvers/saturn_exchange.py) |
+| 4 | Pony Express 500 | WEB | Handlebars AST injection | [`pony_express.py`](solvers/pony_express.py) |
+| 5 | Temporary | WEB | Path traversal and template abuse | [`temporary.py`](solvers/temporary.py) |
+| 6 | OldStock Router | FIRMWARE | SquashFS extraction and backup-secret discovery | [`oldstock_router.py`](solvers/oldstock_router.py) |
+| 7 | StaffDesk | WEB | GraphQL IDOR and account reset | [`staffdesk.py`](solvers/staffdesk.py) |
+| 8 | Cerberus Reports | WEB | Java deserialization and SUID privilege escalation | [`cerberus.py`](solvers/cerberus.py) |
+
+Run `python run.py challenges` to display the recorded flags in the terminal. Full explanations are available in the [challenge writeups](docs/writeup.md).
+
+---
+
+## Two ways to solve
+
+### 1. Autonomous discovery
+
+Use `solve` when the vulnerability or exploit is not yet known. The model receives the challenge description and target context, selects tools, evaluates their output, and continues until it finds a flag or reaches the iteration limit.
+
+```bash
 python run.py solve \
-  --challenge "..." \
+  --challenge "Saturn Exchange batches withdrawals for settlement. Can you scam the exchange?" \
   --category web \
-  --provider ollama \
-  --model llama3.1:70b
+  --host 52.76.96.108 \
+  --port 3000 \
+  --max-iterations 25
+```
 
-# Run a pre-built solver
+For a file-based challenge, give the agent the relevant artifacts:
+
+```bash
+python run.py solve \
+  --challenge "Analyze this binary and capture the flag" \
+  --category pwn \
+  --files ./challenge/vuln ./challenge/libc.so.6
+```
+
+### 2. Deterministic replay
+
+Use `solver` after a technique has been captured. Solver mode does not require an LLM: it reruns the challenge-specific exploit and provides a fast, repeatable demonstration.
+
+```bash
 python run.py solver grimoire-heap
 python run.py solver sandworm-vm
 python run.py solver saturn-exchange
@@ -174,88 +141,255 @@ python run.py solver pony-express
 python run.py solver temporary
 python run.py solver oldstock-router
 python run.py solver staffdesk
-
-# List all solved challenges
-python run.py challenges
-
-# Show supported LLM providers
-python run.py providers
+python run.py solver cerberus
 ```
 
----
-
-## 📌 Hackathon Submission Checklist
-
-Use the exact fields below in your final submission package. Replace the bracketed values with the real team details before exporting the PDF or uploading the repository.
-
-1. Team Name — OtomenTiga
-2. GitHub Repository Link — https://github.com/H0l3yM0l3h
-3. Team Leader Account — Uploaded from the registered team leader's GitHub account
-4. Presentation Slides / Documentation / Writeup — [PDF or PowerPoint slide deck plus writeup]
-5. Technology Stack — Python, LangGraph, LangChain, OpenAI, Anthropic, Ollama, Groq, radare2, r2pipe, pwntools, requests, aiohttp, Rich, Click, python-dotenv
-
-For a fast final pass, fill these placeholders, export the slide deck, and verify the repository is public.
+This dual-mode design is deliberate: the agent explores, while the solver preserves the successful path as executable evidence.
 
 ---
 
-## 🤖 Technology Stack
+## How it works
 
-| Category | Technology | Purpose |
-|----------|-----------|---------|
-| **Language** | Python 3.11+ | Core implementation |
-| **Agent Framework** | LangGraph + LangChain | ReAct reasoning loop & tool orchestration |
-| **LLM (Cloud)** | OpenAI GPT-4o | Primary reasoning engine |
-| **LLM (Cloud)** | Anthropic Claude | Alternative reasoning engine |
-| **LLM (Open Source)** | Llama 3.1 via Ollama | Local open-source inference |
-| **LLM (Fast OSS)** | Groq (Llama 3.1 70B) | Fast cloud inference for open-source models |
-| **Binary Analysis** | radare2 + r2pipe | Disassembly, decompilation, binary inspection |
-| **Exploit Dev** | pwntools | Binary exploitation & payload construction |
-| **Web Exploitation** | requests + aiohttp | HTTP requests & concurrent race conditions |
-| **CLI Interface** | Rich + Click | Terminal UI, logging, colored output |
-| **Configuration** | python-dotenv | Environment variable management |
-| **Data Validation** | Pydantic | Structured data handling |
+```text
+Challenge description + files + target
+                  │
+                  ▼
+        ┌───────────────────┐
+        │  LangGraph agent  │
+        │ reason and decide │
+        └─────────┬─────────┘
+                  │ tool call
+                  ▼
+┌─────────────────────────────────────────────┐
+│ 13 callable tools                           │
+│ files · binaries · code · TCP · HTTP · race │
+└──────────────────────┬──────────────────────┘
+                       │ observation
+                       ▼
+            continue reasoning or finish
+                       │
+                       ▼
+             flag extraction + CLI result
+```
+
+The core graph has two cooperating nodes:
+
+1. **Reason** — the selected chat model analyzes the accumulated messages and either requests tools or returns an answer.
+2. **Tools** — LangGraph executes the requested functions and sends their observations back to the model.
+
+The loop is bounded by `MAX_ITERATIONS`. A successful path can then be preserved in `solvers/` for deterministic replay.
+
+### Tool arsenal
+
+| Area | Agent tools |
+|---|---|
+| Binary analysis | `analyze_binary`, `list_functions`, `get_strings`, `checksec` |
+| Exploit execution | `execute_python_code`, `execute_script_file` |
+| Network | `tcp_connect_and_interact` |
+| Web | `http_request`, `concurrent_requests` |
+| Files and transforms | `read_file`, `write_file`, `hex_encode`, `hex_decode` |
+
+### Agent lifecycle
+
+```text
+observe → analyze → choose a tool → act → inspect evidence → adapt → verify
+```
+
+That feedback loop lets the same harness pivot between very different tasks: disassembling an ELF, racing an API, unpacking firmware, probing GraphQL, or constructing an exploit script.
 
 ---
 
-## 🔧 LLM Provider Support
+## Setup
 
-The agent is provider-agnostic. Switch LLMs via `.env` or CLI flags:
+### Prerequisites
 
-| Provider | Models | Setup |
-|----------|--------|-------|
-| **OpenAI** | `gpt-4o`, `gpt-4o-mini` | Set `OPENAI_API_KEY` in `.env` |
-| **Anthropic** | `claude-sonnet-4-20250514`, `claude-opus-4-20250514` | Set `ANTHROPIC_API_KEY` in `.env` |
-| **Ollama** | `llama3.1:70b`, `deepseek-coder-v2`, `mistral` | Install [Ollama](https://ollama.com), pull model |
-| **Groq** | `llama-3.1-70b-versatile` | Set `GROQ_API_KEY` in `.env` |
+- Python 3.11 or newer
+- One LLM backend for autonomous mode:
+  - an OpenAI, Anthropic, or Groq API key; or
+  - a running local Ollama instance
+- Optional native tools for PWN challenges: radare2, GDB, `objdump`, and a compiler
+- Live, authorized challenge targets for remote solver replays
 
-### Using Ollama (Open Source, Free, Local)
+Deterministic solver mode does not require an LLM unless that individual solver says otherwise.
+
+### 1. Clone the repository
 
 ```bash
-# Install Ollama
-curl -fsSL https://ollama.com/install.sh | sh
+git clone https://github.com/H0l3yM0l3h/OtomenTigaUCSI-AI-Agent.git
+cd OtomenTigaUCSI-AI-Agent
+```
 
-# Pull a model
-ollama pull llama3.1:70b
+### 2. Create the environment
 
-# Configure the agent
-echo 'LLM_PROVIDER=ollama' >> .env
-echo 'LLM_MODEL=llama3.1:70b' >> .env
+Windows PowerShell:
 
-# Run
-python run.py solve --challenge "..." --category pwn
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+Copy-Item .env.example .env
+```
+
+Linux or macOS:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+cp .env.example .env
+```
+
+### 3. Configure one provider
+
+Edit `.env` and choose one configuration.
+
+OpenAI:
+
+```dotenv
+LLM_PROVIDER=openai
+LLM_MODEL=gpt-4o
+OPENAI_API_KEY=your-key
+```
+
+Anthropic:
+
+```dotenv
+LLM_PROVIDER=anthropic
+LLM_MODEL=claude-sonnet-4-20250514
+ANTHROPIC_API_KEY=your-key
+```
+
+Groq:
+
+```dotenv
+LLM_PROVIDER=groq
+LLM_MODEL=llama-3.1-70b-versatile
+GROQ_API_KEY=your-key
+```
+
+Local Ollama:
+
+```bash
+ollama pull llama3.2:3b
+```
+
+```dotenv
+LLM_PROVIDER=ollama
+LLM_MODEL=llama3.2:3b
+OLLAMA_BASE_URL=http://localhost:11434
+```
+
+`llama3.2:3b` is suitable for a local smoke test. For difficult autonomous exploitation, use a stronger tool-calling model; small local models can choose poor tools or return unverified answers.
+
+### 4. Verify the installation
+
+```bash
+python -m pip check
+python run.py providers
+python run.py challenges
+```
+
+For Ollama, also verify that the configured model is available:
+
+```bash
+ollama list
 ```
 
 ---
 
-## 📖 Documentation
+## Usage
 
-- [**Challenge Writeups**](docs/writeup.md) — Detailed analysis and solutions for each challenge
-- [**Architecture Guide**](docs/architecture.md) — Agent design, tool integration, prompt engineering
-- [**Presentation Slides**](presentation/index.html) — Open in browser for the slide deck
+```text
+python run.py solve --challenge TEXT [options]
+python run.py solver NAME
+python run.py providers
+python run.py challenges
+```
+
+Useful `solve` options:
+
+| Option | Purpose |
+|---|---|
+| `--category web` | Choose `pwn`, `web`, `rev`, `crypto`, or `misc`. |
+| `--host HOST` / `--port PORT` | Supply a remote challenge endpoint. |
+| `--files FILE [FILE ...]` | Give the agent binaries, archives, source, or other artifacts. |
+| `--provider NAME` | Override the provider configured in `.env`. |
+| `--model NAME` | Override the configured model. |
+| `--max-iterations N` | Bound the number of reasoning passes. |
+| `--quiet` | Suppress verbose reasoning and tool output. |
+
+Show the full CLI reference at any time:
+
+```bash
+python run.py --help
+python run.py solve --help
+```
 
 ---
 
-## 📄 License
+## Execution and verification notes
 
-This project was created for the UCSI Agentic AI CTF Hackathon 2026.  
-For educational and authorized security testing purposes only.
+- Run this project only against CTF infrastructure or systems where you have explicit authorization.
+- The default generated-code tool runs Python in a local subprocess with a timeout, isolated working directory, and output limit. It is **not** a hardened security boundary.
+- `agent/sandbox.py` and `agent/loop_detect.py` contain experimental Docker-sandbox and loop-detection components; they are not connected to the default LangGraph execution path yet.
+- Autonomous mode currently recognizes strings matching `UCSI26{...}`. For competition evidence, confirm that a flag came from target output or replay it through the deterministic solver instead of trusting a model-generated string alone.
+- Binary-analysis features require their native executables in addition to the Python wrappers.
+
+These boundaries keep the demo honest and make the next engineering improvements clear.
+
+---
+
+## Project structure
+
+```text
+├── run.py                    # Rich CLI: solve, replay, providers, results
+├── agent/
+│   ├── core.py               # LangGraph reason ↔ tool loop
+│   ├── llm.py                # OpenAI, Anthropic, Ollama, Groq adapters
+│   ├── prompts.py            # Category-aware CTF instructions
+│   ├── config.py             # .env and runtime configuration
+│   ├── tools/                # 13 LangChain-callable security tools
+│   ├── sandbox.py            # Experimental Docker execution component
+│   └── loop_detect.py        # Experimental repetition detector
+├── solvers/                  # Eight replayable challenge techniques
+├── docs/
+│   ├── writeup.md            # Challenge analysis and exploitation details
+│   └── architecture.md       # Deeper system design
+├── presentation/index.html  # Competition presentation
+├── requirements.txt
+└── .env.example
+```
+
+---
+
+## Troubleshooting
+
+| Symptom | Check |
+|---|---|
+| `ModuleNotFoundError` | Activate the virtual environment and rerun `pip install -r requirements.txt`. |
+| Ollama connection error | Run `ollama serve`, then confirm the model appears in `ollama list`. |
+| Model not found | Make `LLM_MODEL` exactly match an installed or provider-supported model ID. |
+| Binary tool unavailable | Install the native radare2, GDB, or binutils executable and ensure it is on `PATH`. |
+| Agent stops without a flag | Add relevant files/target details, increase the iteration cap, or use a stronger tool-calling model. |
+| Replay cannot connect | Confirm the competition service is still online and the target in the solver is current. |
+
+---
+
+## Competition submission
+
+- **Team:** OtomenTiga
+- **Repository:** [H0l3yM0l3h/OtomenTigaUCSI-AI-Agent](https://github.com/H0l3yM0l3h/OtomenTigaUCSI-AI-Agent)
+- **Writeups:** [`docs/writeup.md`](docs/writeup.md)
+- **Architecture:** [`docs/architecture.md`](docs/architecture.md)
+- **Presentation:** [`presentation/index.html`](presentation/index.html)
+- **Stack:** Python, LangGraph, LangChain, OpenAI, Anthropic, Ollama, Groq, pwntools, radare2/r2pipe, requests, aiohttp, Rich, Click, and Pydantic
+
+Before final submission, confirm that the repository is public and export the presentation/writeup to the format required by the organizers.
+
+---
+
+## Responsible use
+
+This project was created for educational CTF work and authorized security testing. Do not use it against systems without explicit permission.
