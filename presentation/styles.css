@@ -1,0 +1,317 @@
+/* ═══════════════════════════════════════════════════════
+   UCSI Agentic AI CTF 2026 — Presentation Styles
+   Custom CSS for Reveal.js slide deck
+   ═══════════════════════════════════════════════════════ */
+
+/* ── Base ──────────────────────────────────────────── */
+
+.reveal {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.reveal h1, .reveal h2, .reveal h3, .reveal h4 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.reveal code {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+    font-size: 0.85em;
+    background: rgba(88, 166, 255, 0.1);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    color: #58a6ff;
+}
+
+.reveal pre code {
+    background: transparent;
+    padding: 0;
+}
+
+/* ── Cards ─────────────────────────────────────────── */
+
+.card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 1.2em 1.5em;
+    backdrop-filter: blur(10px);
+}
+
+.card h4 {
+    color: #58a6ff;
+    margin: 0 0 0.5em 0;
+    font-size: 1em;
+}
+
+.card p {
+    margin: 0;
+    font-size: 0.85em;
+    color: #c9d1d9;
+}
+
+.card ul {
+    margin: 0;
+    padding-left: 1.2em;
+    font-size: 0.85em;
+    color: #c9d1d9;
+}
+
+.card li {
+    margin-bottom: 0.3em;
+}
+
+/* ── Architecture Diagram ──────────────────────────── */
+
+.arch-diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3em;
+}
+
+.arch-layer {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid;
+    border-radius: 10px;
+    padding: 0.8em 2em;
+    width: 70%;
+    text-align: center;
+    font-size: 0.8em;
+    color: #c9d1d9;
+}
+
+.arch-label {
+    font-weight: 700;
+    font-size: 1em;
+    margin-bottom: 0.2em;
+    color: #fff;
+}
+
+.arch-arrow {
+    color: #484f58;
+    font-size: 1.2em;
+    line-height: 1;
+}
+
+.arch-row {
+    display: flex;
+    gap: 0.6em;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.arch-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid;
+    border-radius: 8px;
+    padding: 0.6em 0.8em;
+    font-size: 0.7em;
+    text-align: center;
+    color: #c9d1d9;
+    min-width: 80px;
+}
+
+/* ── ReAct Nodes ───────────────────────────────────── */
+
+.react-node {
+    border-radius: 12px;
+    padding: 0.8em 1em;
+    text-align: center;
+    min-width: 100px;
+    color: #fff;
+}
+
+.react-node strong {
+    display: block;
+    font-size: 0.85em;
+    margin: 0.3em 0;
+}
+
+.react-node small {
+    display: block;
+    font-size: 0.65em;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.3;
+}
+
+.react-arrow {
+    color: #484f58;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+/* ── Tables ────────────────────────────────────────── */
+
+.tool-table,
+.tech-table,
+.results-table {
+    width: 90%;
+    margin: 0 auto;
+    border-collapse: collapse;
+    font-size: 0.75em;
+}
+
+.tool-table th,
+.tech-table th,
+.results-table th {
+    background: rgba(88, 166, 255, 0.15);
+    color: #58a6ff;
+    padding: 0.6em 1em;
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 2px solid rgba(88, 166, 255, 0.3);
+}
+
+.tool-table td,
+.tech-table td,
+.results-table td {
+    padding: 0.5em 1em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    color: #c9d1d9;
+}
+
+.tool-table tr:hover td,
+.tech-table tr:hover td,
+.results-table tr:hover td {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+/* ── Badges ────────────────────────────────────────── */
+
+.badge {
+    display: inline-block;
+    padding: 0.2em 0.6em;
+    border-radius: 4px;
+    font-size: 0.8em;
+    font-weight: 600;
+}
+
+.badge.pwn {
+    background: rgba(255, 119, 186, 0.2);
+    color: #f778ba;
+}
+
+.badge.web {
+    background: rgba(88, 166, 255, 0.2);
+    color: #58a6ff;
+}
+
+.badge.solved {
+    background: rgba(63, 185, 80, 0.2);
+    color: #3fb950;
+}
+
+/* ── Flag Box ──────────────────────────────────────── */
+
+.flag-box {
+    background: rgba(63, 185, 80, 0.08);
+    border: 1px solid rgba(63, 185, 80, 0.3);
+    border-radius: 8px;
+    padding: 0.6em 1em;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75em;
+    color: #3fb950;
+    text-align: center;
+    word-break: break-all;
+}
+
+/* ── Provider Cards ────────────────────────────────── */
+
+.provider-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 1em 1.5em;
+    text-align: center;
+    min-width: 140px;
+}
+
+.provider-card h4 {
+    color: #fff;
+    margin: 0.5em 0 0.3em;
+    font-size: 0.9em;
+}
+
+.provider-card p {
+    color: #8b949e;
+    font-size: 0.75em;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.provider-card small {
+    color: #484f58;
+    font-size: 0.7em;
+}
+
+/* ── Decision Rows ─────────────────────────────────── */
+
+.decision-row {
+    display: flex;
+    gap: 1em;
+    margin-bottom: 0.8em;
+    align-items: flex-start;
+}
+
+.decision-label {
+    min-width: 220px;
+    font-weight: 600;
+    color: #bc8cff;
+    font-size: 0.85em;
+    flex-shrink: 0;
+}
+
+.decision-text {
+    color: #8b949e;
+    font-size: 0.8em;
+    line-height: 1.4;
+}
+
+/* ── Future Cards ──────────────────────────────────── */
+
+.future-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 1em;
+    text-align: left;
+}
+
+.future-card h4 {
+    color: #58a6ff;
+    margin: 0 0 0.3em;
+    font-size: 0.85em;
+}
+
+.future-card p {
+    color: #8b949e;
+    font-size: 0.75em;
+    margin: 0;
+    line-height: 1.3;
+}
+
+/* ── Animations ────────────────────────────────────── */
+
+.reveal .slides section {
+    transition: all 0.3s ease;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.reveal .slides section.present .card,
+.reveal .slides section.present .arch-box,
+.reveal .slides section.present .react-node,
+.reveal .slides section.present .provider-card,
+.reveal .slides section.present .future-card {
+    animation: fadeInUp 0.5s ease forwards;
+}

@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UCSI Agentic AI CTF 2026 — Agent Presentation</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║          SLIDE 1 — TITLE              ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%)">
+    <div style="margin-bottom: 1em;">
+        <span style="font-size: 3em;">🚩</span>
+    </div>
+    <h1 style="font-size: 2em; background: linear-gradient(90deg, #58a6ff, #bc8cff, #f778ba); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.3em;">
+        Agentic AI CTF Solver
+    </h1>
+    <h3 style="color: #8b949e; font-weight: 300;">UCSI Agentic AI CTF Hackathon 2026</h3>
+    <br>
+    <p style="color: #58a6ff; font-size: 0.9em;">
+        Autonomous CTF Challenge Solving with AI Agents
+    </p>
+    <p style="color: #484f58; font-size: 0.7em; margin-top: 2em;">
+        8 Challenges Solved &nbsp;•&nbsp; 2 PWN &nbsp;•&nbsp; 5 WEB &nbsp;•&nbsp; 1 Firmware
+    </p>
+    <div style="max-width: 760px; margin: 1.5em auto 0; padding: 1em 1.2em; border: 1px solid rgba(88,166,255,0.35); border-radius: 14px; background: rgba(13,17,23,0.72); text-align: left; font-size: 0.55em; line-height: 1.7; color: #c9d1d9;">
+        <div style="color: #58a6ff; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.35em;">Submission details</div>
+        <div><strong>Team Name:</strong> OtomenTiga</div>
+        <div><strong>GitHub Repository Link:</strong> <a href="https://github.com/H0l3yM0l3h" target="_blank" style="color: #58a6ff; text-decoration: underline;">https://github.com/H0l3yM0l3h</a></div>
+        <div><strong>Team Leader Account:</strong> Uploaded from the registered team leader's GitHub account</div>
+        <div><strong>Presentation / Documentation / Writeup:</strong> Included in this deck and the companion writeup</div>
+        <div><strong>Technology Stack:</strong> Python, LangGraph, LangChain, OpenAI, Anthropic, Ollama, Groq, radare2, r2pipe, pwntools, requests, aiohttp, Rich, Click, python-dotenv</div>
+        <div style="text-align: center; margin-top: 1em;">
+            <a href="?print-pdf" target="_blank" style="display: inline-block; padding: 0.5em 1em; background: rgba(88,166,255,0.15); border: 1px solid #58a6ff; border-radius: 6px; color: #58a6ff; text-decoration: none; font-size: 0.95em; font-weight: bold; transition: all 0.2s;">🖨️ Open Print/Export PDF Layout</a>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║        SLIDE 2 — PROBLEM              ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #58a6ff;">The Challenge</h2>
+    <br>
+    <div style="text-align: left; max-width: 800px; margin: 0 auto;">
+        <div class="card">
+            <h4>🎯 Goal</h4>
+            <p>Build an AI agent that can <strong>autonomously solve</strong> CTF cybersecurity challenges</p>
+        </div>
+        <br>
+        <div class="card">
+            <h4>📋 Requirements</h4>
+            <ul>
+                <li>Analyze challenge binaries and web applications</li>
+                <li>Identify security vulnerabilities</li>
+                <li>Generate and execute exploit code</li>
+                <li>Extract flags without human assistance</li>
+            </ul>
+        </div>
+        <br>
+        <div class="card">
+            <h4>🏁 Scope</h4>
+            <p><strong>PWN</strong> (binary exploitation) and <strong>WEB</strong> (web exploitation) categories</p>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║    SLIDE 3 — ARCHITECTURE OVERVIEW     ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #58a6ff;">Agent Architecture</h2>
+    <br>
+    <div class="arch-diagram">
+        <div class="arch-layer" style="border-color: #58a6ff;">
+            <div class="arch-label">CLI Interface</div>
+            <code>run.py</code> — Rich terminal UI
+        </div>
+        <div class="arch-arrow">▼</div>
+        <div class="arch-layer" style="border-color: #bc8cff;">
+            <div class="arch-label">Agent Core — ReAct Loop</div>
+            <code>Observe → Analyze → Plan → Exploit → Verify</code>
+        </div>
+        <div class="arch-arrow">▼</div>
+        <div class="arch-row">
+            <div class="arch-box" style="border-color: #f778ba;">🔍 Binary<br>Analysis</div>
+            <div class="arch-box" style="border-color: #f778ba;">⚡ Code<br>Executor</div>
+            <div class="arch-box" style="border-color: #f778ba;">🌐 Network<br>Client</div>
+            <div class="arch-box" style="border-color: #f778ba;">🕸️ Web<br>Tools</div>
+            <div class="arch-box" style="border-color: #f778ba;">📁 File<br>Tools</div>
+        </div>
+        <div class="arch-arrow">▼</div>
+        <div class="arch-row">
+            <div class="arch-box" style="border-color: #3fb950;">OpenAI<br>GPT-4o</div>
+            <div class="arch-box" style="border-color: #3fb950;">Anthropic<br>Claude</div>
+            <div class="arch-box" style="border-color: #3fb950;">Ollama<br>(Local)</div>
+            <div class="arch-box" style="border-color: #3fb950;">Groq<br>(Fast OSS)</div>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║      SLIDE 4 — REACT LOOP             ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #58a6ff;">ReAct Reasoning Loop</h2>
+    <br>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 1em; flex-wrap: wrap;">
+        <div class="react-node" style="background: #1a3a5c;">
+            <div style="font-size: 1.5em;">🔍</div>
+            <strong>OBSERVE</strong>
+            <small>Read challenge,<br>examine files</small>
+        </div>
+        <div class="react-arrow">→</div>
+        <div class="react-node" style="background: #2d1a4e;">
+            <div style="font-size: 1.5em;">🧠</div>
+            <strong>ANALYZE</strong>
+            <small>Identify vuln<br>class & surface</small>
+        </div>
+        <div class="react-arrow">→</div>
+        <div class="react-node" style="background: #3b1a3a;">
+            <div style="font-size: 1.5em;">📝</div>
+            <strong>PLAN</strong>
+            <small>Formulate<br>exploit strategy</small>
+        </div>
+        <div class="react-arrow">→</div>
+        <div class="react-node" style="background: #1a3a2e;">
+            <div style="font-size: 1.5em;">⚡</div>
+            <strong>EXPLOIT</strong>
+            <small>Execute attack<br>via tools</small>
+        </div>
+        <div class="react-arrow">→</div>
+        <div class="react-node" style="background: #3a3a1a;">
+            <div style="font-size: 1.5em;">✅</div>
+            <strong>VERIFY</strong>
+            <small>Extract &<br>validate flag</small>
+        </div>
+    </div>
+    <br>
+    <div style="text-align: center;">
+        <p style="color: #8b949e; font-size: 0.85em;">
+            Built with <strong style="color: #58a6ff;">LangGraph</strong> state machine &nbsp;•&nbsp;
+            Powered by <strong style="color: #bc8cff;">LangChain</strong> tool framework
+        </p>
+        <p style="color: #484f58; font-size: 0.75em;">
+            Loops until flag found or max iterations reached (default: 25)
+        </p>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║       SLIDE 5 — TOOL SUITE            ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #58a6ff;">Tool Suite</h2>
+    <br>
+    <table class="tool-table">
+        <thead>
+            <tr><th>Tool</th><th>Technology</th><th>Purpose</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>analyze_binary</code></td>
+                <td>r2pipe / radare2</td>
+                <td>Decompile & disassemble ELF binaries</td>
+            </tr>
+            <tr>
+                <td><code>checksec</code></td>
+                <td>pwntools</td>
+                <td>Check binary security mitigations</td>
+            </tr>
+            <tr>
+                <td><code>execute_python_code</code></td>
+                <td>subprocess</td>
+                <td>Run exploit scripts in sandbox</td>
+            </tr>
+            <tr>
+                <td><code>tcp_connect_and_interact</code></td>
+                <td>socket</td>
+                <td>Interactive service communication</td>
+            </tr>
+            <tr>
+                <td><code>http_request</code></td>
+                <td>requests</td>
+                <td>HTTP requests with session management</td>
+            </tr>
+            <tr>
+                <td><code>concurrent_requests</code></td>
+                <td>aiohttp</td>
+                <td>Race condition exploitation</td>
+            </tr>
+            <tr>
+                <td><code>read_file</code> / <code>write_file</code></td>
+                <td>pathlib</td>
+                <td>File I/O and hex utilities</td>
+            </tr>
+        </tbody>
+    </table>
+    <p style="color: #484f58; font-size: 0.7em; text-align: center; margin-top: 1em;">
+        All tools are <code>@langchain_core.tools.tool</code> decorated → auto-schema for LLM
+    </p>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║       SLIDE 6 — LLM PROVIDERS         ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #58a6ff;">LLM Provider Support</h2>
+    <p style="color: #8b949e;">Provider-agnostic design — swap models via <code>.env</code></p>
+    <br>
+    <div style="display: flex; gap: 1.2em; justify-content: center; flex-wrap: wrap;">
+        <div class="provider-card">
+            <div style="font-size: 2em;">🟢</div>
+            <h4>OpenAI</h4>
+            <p>GPT-4o<br>GPT-4o-mini</p>
+            <small>Cloud API</small>
+        </div>
+        <div class="provider-card">
+            <div style="font-size: 2em;">🟠</div>
+            <h4>Anthropic</h4>
+            <p>Claude Sonnet<br>Claude Opus</p>
+            <small>Cloud API</small>
+        </div>
+        <div class="provider-card">
+            <div style="font-size: 2em;">🦙</div>
+            <h4>Ollama</h4>
+            <p>Llama 3.1 70B<br>DeepSeek Coder</p>
+            <small>Local / Free</small>
+        </div>
+        <div class="provider-card">
+            <div style="font-size: 2em;">⚡</div>
+            <h4>Groq</h4>
+            <p>Llama 3.1 70B<br>Fast inference</p>
+            <small>Cloud OSS</small>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║    SLIDE 7 — CHALLENGE 1: GRIMOIRE    ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #f778ba;">Challenge 1: Grimoire Heap</h2>
+    <p style="color: #8b949e;">PWN — Use-After-Free + Tcache Poisoning</p>
+    <br>
+    <div style="display: flex; gap: 2em; align-items: flex-start; justify-content: center; flex-wrap: wrap;">
+        <div style="text-align: left; max-width: 450px;">
+            <h4 style="color: #58a6ff;">Vulnerability</h4>
+            <ul style="font-size: 0.8em;">
+                <li><code>free()</code> without nulling pointer → <strong>UAF</strong></li>
+                <li>Read/write freed heap chunks</li>
+                <li>Flag stored on heap via <code>malloc(0x80)</code></li>
+            </ul>
+            <br>
+            <h4 style="color: #58a6ff;">Exploit Chain</h4>
+            <ol style="font-size: 0.8em;">
+                <li>Allocate 2 spells (size 0x80)</li>
+                <li>Free A → leak <code>heap_hi</code></li>
+                <li>Free B → decode tcache fd</li>
+                <li>Tcache poison → redirect to flag</li>
+                <li>Allocate → read flag</li>
+            </ol>
+        </div>
+        <div style="text-align: left; max-width: 400px;">
+            <h4 style="color: #58a6ff;">Heap Layout</h4>
+            <pre style="font-size: 0.65em; background: #161b22; padding: 1em; border-radius: 8px;"><code>┌─────────────────┐
+│   g_flag chunk   │ ← flag here
+│   (0x90 bytes)   │
+├─────────────────┤
+│   Spell A        │ ← freed (UAF)
+│   (0x90 bytes)   │
+├─────────────────┤
+│   Spell B        │ ← poisoned fd
+│   (0x90 bytes)   │
+└─────────────────┘</code></pre>
+            <br>
+            <div class="flag-box">
+                🚩 UCSI26{grimoire_uaf_tcache_win_6e7291e6}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║    SLIDE 8 — CHALLENGE 2: SANDWORM    ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #f778ba;">Challenge 2: Sandworm VM</h2>
+    <p style="color: #8b949e;">PWN — VM Out-of-Bounds Escape</p>
+    <br>
+    <div style="display: flex; gap: 2em; align-items: flex-start; justify-content: center; flex-wrap: wrap;">
+        <div style="text-align: left; max-width: 450px;">
+            <h4 style="color: #58a6ff;">Vulnerability</h4>
+            <ul style="font-size: 0.8em;">
+                <li>Bounds check validates <strong>base register only</strong></li>
+                <li>Final index = <code>base + imm + 16</code> can exceed sandbox</li>
+                <li><code>255 + 1 + 16 = 272</code> → hook function pointer</li>
+            </ul>
+            <br>
+            <h4 style="color: #58a6ff;">Exploit (6 instructions)</h4>
+            <pre style="font-size: 0.7em; background: #161b22; padding: 0.8em; border-radius: 8px;"><code>MOV  r0, 255       ; valid base
+RLOAD r1, [272]    ; OOB read hook
+ADD  r1, 0x1e0     ; → emit_flag
+RSTORE [272], r1   ; OOB write
+CALL hook          ; emit_flag()!
+HALT</code></pre>
+        </div>
+        <div style="text-align: left; max-width: 380px;">
+            <h4 style="color: #58a6ff;">VM Memory</h4>
+            <pre style="font-size: 0.6em; background: #161b22; padding: 1em; border-radius: 8px;"><code>vm+0x000  registers[16]
+vm+0x080  memory[256 cells]
+          ↑ sandbox boundary
+vm+0x880  hook_default ptr   ← cell 272
+vm+0x888  hook argument
+vm+0x890  bytecode</code></pre>
+            <br>
+            <p style="font-size: 0.75em; color: #8b949e;">
+                <strong>Key insight:</strong> Redirect <code>hook_default</code> (+0x1e0 → <code>emit_flag</code>) via OOB memory write
+            </p>
+            <br>
+            <div class="flag-box">
+                🚩 UCSI26{sandworm_vm_oob_escape_025a2ef7}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║    SLIDE 9 — CHALLENGE 3: SATURN      ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #f778ba;">Challenge 3: Saturn Exchange</h2>
+    <p style="color: #8b949e;">WEB — Async Settlement Race Condition</p>
+    <br>
+    <div style="display: flex; gap: 2em; align-items: flex-start; justify-content: center; flex-wrap: wrap;">
+        <div style="text-align: left; max-width: 500px;">
+            <h4 style="color: #58a6ff;">Vulnerability</h4>
+            <p style="font-size: 0.8em;">
+                Withdrawal balance check is <strong>not atomic</strong>. Concurrent requests all see
+                1.0 BTC and pass validation before settlement processes them.
+            </p>
+            <br>
+            <h4 style="color: #58a6ff;">Race Timeline</h4>
+            <pre style="font-size: 0.65em; background: #161b22; padding: 1em; border-radius: 8px;"><code>Time →
+Req 1: check(1.0 > 0.6) ✓ → queued
+Req 2: check(1.0 > 0.6) ✓ → queued
+Req 3: check(1.0 > 0.6) ✓ → queued
+                    ↓ settlement
+         1.0 - (3 × 0.6) = -0.8 BTC
+                    ↓
+         🚩 FLAG DISCLOSED</code></pre>
+        </div>
+        <div style="text-align: left; max-width: 380px;">
+            <h4 style="color: #58a6ff;">Exploit</h4>
+            <ol style="font-size: 0.8em;">
+                <li>Reset: <code>POST /api/reset</code></li>
+                <li>Fire 3× concurrent <code>POST /api/withdraw</code></li>
+                <li>Wait for settlement</li>
+                <li>Check: <code>POST /api/balance</code></li>
+            </ol>
+            <br>
+            <p style="font-size: 0.75em; color: #8b949e;">
+                Used <code>aiohttp</code> for true concurrent connections,
+                maximizing the race window.
+            </p>
+            <br>
+            <div class="flag-box">
+                🚩 UCSI26{4sync_settlement_r4c3_110cbe1e}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║  SLIDE 10 — CHALLENGE 4: PONY EXPRESS ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #f778ba;">Challenge 4: Pony Express 500</h2>
+    <p style="color: #8b949e;">WEB — Handlebars AST Injection (CVE-2026-33937)</p>
+    <br>
+    <div style="display: flex; gap: 2em; align-items: flex-start; justify-content: center; flex-wrap: wrap;">
+        <div style="text-align: left; max-width: 480px;">
+            <h4 style="color: #58a6ff;">Vulnerability</h4>
+            <p style="font-size: 0.8em;">
+                Server passes JSON directly to <code>Handlebars.compile()</code> without enforcing string type.
+                A forged AST <code>NumberLiteral.value</code> injects JavaScript.
+            </p>
+            <br>
+            <h4 style="color: #58a6ff;">Attack Chain</h4>
+            <ol style="font-size: 0.75em;">
+                <li>Fingerprint Handlebars (<code>{{this}}</code> → <code>[object Object]</code>)</li>
+                <li>Send <code>template</code> as AST object (not string)</li>
+                <li>Inject JS via <code>NumberLiteral.value</code></li>
+                <li>Access <code>process.getBuiltinModule('fs')</code></li>
+                <li>Read <code>/flag/flag.txt</code></li>
+            </ol>
+        </div>
+        <div style="text-align: left; max-width: 400px;">
+            <h4 style="color: #58a6ff;">Key Payload</h4>
+            <pre style="font-size: 0.55em; background: #161b22; padding: 0.8em; border-radius: 8px;"><code class="language-json">{
+  "type": "NumberLiteral",
+  "value": "{},{})) + process
+    .getBuiltinModule('fs')
+    .readFileSync(
+      '/flag/flag.txt','utf8'
+    ) //",
+  "original": 1
+}</code></pre>
+            <br>
+            <div class="flag-box" style="font-size: 0.75em;">
+                🚩 UCSI26{cve-2026-33937_h4ndl3b4rs_4st_1nj3ct10n}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║    SLIDE 11 — CHALLENGE 5: TEMPORARY  ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #f778ba;">Challenge 5: Temporary</h2>
+    <p style="color: #8b949e;">WEB — Path Traversal Template Write (CVE-2026-44705)</p>
+    <br>
+    <div style="display: flex; gap: 2em; align-items: flex-start; justify-content: center; flex-wrap: wrap;">
+        <div style="text-align: left; max-width: 480px;">
+            <h4 style="color: #58a6ff;">Vulnerability</h4>
+            <ul style="font-size: 0.8em;">
+                <li>Note creation API joined prefix to filename unsanitized</li>
+                <li>Path traversal (<code>../../</code>) allowed escaping default notes folder</li>
+                <li>Attacker could write arbitrary content to <code>/app/templates</code></li>
+            </ul>
+            <br>
+            <h4 style="color: #58a6ff;">Exploit Chain</h4>
+            <ol style="font-size: 0.75em;">
+                <li>Send <code>POST /api/notes</code> with prefix <code>../../templates/pwn</code> and content <code>{{FLAG}}</code></li>
+                <li>Server creates note file inside templates directory</li>
+                <li>Trigger compilation via <code>GET /api/render?name=pwn-1-xxxx</code></li>
+                <li>Flag is evaluated and leaked from template context</li>
+            </ol>
+        </div>
+        <div style="text-align: left; max-width: 400px;">
+            <h4 style="color: #58a6ff;">Traversal Payload</h4>
+            <pre style="font-size: 0.55em; background: #161b22; padding: 1em; border-radius: 8px;"><code class="language-json">POST /api/notes
+{
+  "prefix": "../../templates/pwn",
+  "content": "{{FLAG}}"
+}</code></pre>
+            <br>
+            <div class="flag-box" style="font-size: 0.75em;">
+                🚩 UCSI26{cve-2026-44705_tmp_tr4v3rs4l_g4in_1s_f0r3v3r}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║   SLIDE 12 — CHALLENGE 6: OLDSTOCK    ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #f778ba;">Challenge 6: OldStock Router</h2>
+    <p style="color: #8b949e;">FIRMWARE — Custom Offset SquashFS Extraction</p>
+    <br>
+    <div style="display: flex; gap: 2em; align-items: flex-start; justify-content: center; flex-wrap: wrap;">
+        <div style="text-align: left; max-width: 480px;">
+            <h4 style="color: #58a6ff;">Analysis & Identification</h4>
+            <ul style="font-size: 0.8em;">
+                <li>Firmware binary file has a generic 256-byte header</li>
+                <li>SquashFS magic signature <code>hsqs</code> identified at offset <code>0x100</code></li>
+                <li>Root filesystem uses gzip compression metadata</li>
+            </ul>
+            <br>
+            <h4 style="color: #58a6ff;">Extraction & Recovery</h4>
+            <ol style="font-size: 0.75em;">
+                <li>Inspect firmware headers via hex signature parsing</li>
+                <li>Extract root filesystem with offset:</li>
+                <code style="font-size: 0.85em; background: #161b22; padding: 0.2em 0.4em;">unsquashfs -d out -o 256 FW.bin</code>
+                <li>Scan files and locate <code>etc/config/rconfig.bak</code></li>
+                <li>Recover credentials and leaked access code flag</li>
+            </ol>
+        </div>
+        <div style="text-align: left; max-width: 400px;">
+            <h4 style="color: #58a6ff;">Backup Leak</h4>
+            <pre style="font-size: 0.55em; background: #161b22; padding: 1em; border-radius: 8px;"><code># etc/config/rconfig.bak
+config backup 'secrets'
+    option ssid 'OldStock-F9D2'
+    option flag 'UCSI26{0ld5t0ck_fw_b4ckup_l34k}'
+    option psk 'not-the-flag'</code></pre>
+            <br>
+            <div class="flag-box" style="font-size: 0.75em;">
+                🚩 UCSI26{0ld5t0ck_fw_b4ckup_l34k}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║    SLIDE 13 — CHALLENGE 7: STAFFDESK  ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #f778ba;">Challenge 7: StaffDesk</h2>
+    <p style="color: #8b949e;">WEB — GraphQL IDOR & Takeover Account Reset</p>
+    <br>
+    <div style="display: flex; gap: 2em; align-items: flex-start; justify-content: center; flex-wrap: wrap;">
+        <div style="text-align: left; max-width: 480px;">
+            <h4 style="color: #58a6ff;">Vulnerability</h4>
+            <ul style="font-size: 0.8em;">
+                <li>GraphQL query <code>user(id: Int!)</code> lacked object-level authorization</li>
+                <li>Any user could fetch details of administrator (user ID 1)</li>
+                <li>The fetched User object exposed the sensitive <code>resetToken</code> field</li>
+            </ul>
+            <br>
+            <h4 style="color: #58a6ff;">Exploit Chain</h4>
+            <ol style="font-size: 0.7em;">
+                <li>Register normal user and retrieve session token</li>
+                <li>Query user ID 1 and leak admin's password <code>resetToken</code></li>
+                <li>Invoke <code>resetPassword</code> mutation immediately to hijack account</li>
+                <li>Submit protected <code>flag</code> query with the admin bearer token</li>
+            </ol>
+        </div>
+        <div style="text-align: left; max-width: 400px;">
+            <h4 style="color: #58a6ff;">Leaked Schema Fields</h4>
+            <pre style="font-size: 0.55em; background: #161b22; padding: 1em; border-radius: 8px;"><code class="language-graphql">type User {
+  id: Int
+  username: String
+  resetToken: String  # ← Leaked via IDOR!
+}
+
+type Query {
+  user(id: Int!): User
+  flag: String
+}</code></pre>
+            <br>
+            <div class="flag-box" style="font-size: 0.75em;">
+                🚩 UCSI26{gr4phql_1d0r_2_admin_t4k30v3r}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║    SLIDE 14 — CHALLENGE 8: CERBERUS   ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #f778ba;">Challenge 8: Cerberus Reports</h2>
+    <p style="color: #8b949e;">WEB — Jackson Deserialization Bypass & Tar SUID Hijack</p>
+    <br>
+    <div style="display: flex; gap: 2em; align-items: flex-start; justify-content: center; flex-wrap: wrap;">
+        <div style="text-align: left; max-width: 480px;">
+            <h4 style="color: #58a6ff;">Vulnerability</h4>
+            <ul style="font-size: 0.75em;">
+                <li>Validator restricts polymorphic classes to <code>java.util.</code></li>
+                <li>Bypass via generic list: <code>java.util.ArrayList&lt;EnrichmentTask&gt;</code></li>
+                <li>Instantiates EnrichmentTask, executing commands via <code>setCommand()</code></li>
+            </ul>
+            <br>
+            <h4 style="color: #58a6ff;">SUID Tar Hijack</h4>
+            <ol style="font-size: 0.7em;">
+                <li>RCE runs as restricted <code>webapp</code> user</li>
+                <li>SUID helper <code>report-maint</code> runs <code>tar</code> in <code>incoming/</code></li>
+                <li>Write payload file and wildcard options to trigger command execution</li>
+                <li>Escalate to root and copy protected <code>secret.flag</code></li>
+            </ol>
+        </div>
+        <div style="text-align: left; max-width: 400px;">
+            <h4 style="color: #58a6ff;">Wildcard Options Payload</h4>
+            <pre style="font-size: 0.55em; background: #161b22; padding: 0.8em; border-radius: 8px;"><code class="language-bash"># setup checkpoint execution flags
+touch "--checkpoint=1"
+touch "--checkpoint-action=exec=sh pwn.sh"
+# report-maint runs: tar cf archive.tgz *
+# executing pwn.sh as root!</code></pre>
+            <br>
+            <div class="flag-box" style="font-size: 0.75em;">
+                🚩 UCSI26{cerberus_gadget_privesc_8630453b}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║  SLIDE 15 — DOCKER SANDBOX ISOLATION  ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #58a6ff;">Docker Sandbox Isolation</h2>
+    <p style="color: #8b949e;">Safely executing generated exploit code and binaries</p>
+    <br>
+    <div style="display: flex; gap: 2em; align-items: flex-start; justify-content: center; flex-wrap: wrap;">
+        <div style="text-align: left; max-width: 500px;">
+            <h4 style="color: #bc8cff;">Why Sandboxing?</h4>
+            <p style="font-size: 0.75em; line-height: 1.5; color: #c9d1d9;">
+                CTF solvers generate and run untrusted exploit payloads. Running this directly on the host poses massive security risks. The harness isolates execution via containers.
+            </p>
+            <br>
+            <h4 style="color: #bc8cff;">Sandbox Configuration</h4>
+            <ul style="font-size: 0.75em; line-height: 1.5; color: #c9d1d9;">
+                <li><strong>Volume Bindings:</strong> Mounts workspace (Read/Write) and challenge distfiles (Read-Only).</li>
+                <li><strong>Strict Limits:</strong> Restricts memory (default: 4GB) and CPU footprint.</li>
+                <li><strong>Security Profiles:</strong> Runs with unconfined seccomp/ptrace capabilites for low-level debugging (GDB, checksec) when required.</li>
+                <li><strong>Host Fallback:</strong> Soft degradation to local execution when Docker is unavailable.</li>
+            </ul>
+        </div>
+        <div style="text-align: left; max-width: 400px;">
+            <h4 style="color: #bc8cff;">Isolation Design</h4>
+            <pre style="font-size: 0.6em; background: #161b22; padding: 1.2em; border-radius: 8px;"><code>┌────────────────────────────────┐
+│           Host System          │
+├────────────────────────────────┤
+│  ┌──────────────────────────┐  │
+│  │   Docker Sandbox (16G)   │  │
+│  ├──────────────────────────┤  │
+│  │   distfiles (ro)         │  │
+│  │   workspace (rw)         │  │
+│  │   pwntools / r2 / gdb    │  │
+│  └──────────────────────────┘  │
+└────────────────────────────────┘</code></pre>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║      SLIDE 12 — LOOP DETECTION       ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #58a6ff;">Anti-Loop Protection</h2>
+    <p style="color: #8b949e;">Preventing LLMs from getting stuck in repetitive execution cycles</p>
+    <br>
+    <div style="display: flex; gap: 2em; align-items: flex-start; justify-content: center; flex-wrap: wrap;">
+        <div style="text-align: left; max-width: 500px;">
+            <h4 style="color: #bc8cff;">The Infinite Loop Problem</h4>
+            <p style="font-size: 0.75em; line-height: 1.5; color: #c9d1d9;">
+                When a tool call fails, an LLM often repeats the same action with the same parameters (e.g. reading the same file 5 times), exhausting context windows and token budgets.
+            </p>
+            <br>
+            <h4 style="color: #bc8cff;">Warning Injection System</h4>
+            <ul style="font-size: 0.75em; line-height: 1.5; color: #c9d1d9;">
+                <li><strong>Sliding History:</strong> Keeps a sliding window of recent tool call names + argument hashes.</li>
+                <li><strong>Warning State:</strong> Triggers warning prompt after 3 repeated calls to redirect the agent's strategy.</li>
+                <li><strong>Break State:</strong> Terminates iteration after 5 repeated calls to conserve API token costs.</li>
+            </ul>
+        </div>
+        <div style="text-align: left; max-width: 400px;">
+            <h4 style="color: #bc8cff;">Injected Alert</h4>
+            <div class="card" style="border-color: #d29922; background: rgba(210,153,34,0.08);">
+                <h4 style="color: #d29922; margin: 0 0 0.5em 0;">⚠️ Loop Detected</h4>
+                <p style="font-size: 0.65em; line-height: 1.4; color: #c9d1d9;">
+                    "You appear to be repeating the same actions. Stop and reconsider your approach. Try a completely different technique or tool. Analyze why it is failing and pivot."
+                </p>
+            </div>
+            <br>
+            <p style="font-size: 0.7em; color: #8b949e;">
+                This feedback forces the LLM to dynamically adapt its reasoning and try creative alternatives.
+            </p>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║     SLIDE 13 — DESIGN DECISIONS       ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #58a6ff;">Design Decisions</h2>
+    <br>
+    <div style="text-align: left; max-width: 800px; margin: 0 auto;">
+        <div class="decision-row">
+            <div class="decision-label">ReAct over Chain-of-Thought</div>
+            <div class="decision-text">ReAct enables tool use between reasoning steps, essential for interactive exploitation</div>
+        </div>
+        <div class="decision-row">
+            <div class="decision-label">LangGraph over raw loops</div>
+            <div class="decision-text">State machine provides clear control flow, conditional routing, and built-in tool execution</div>
+        </div>
+        <div class="decision-row">
+            <div class="decision-label">Provider abstraction</div>
+            <div class="decision-text">Swap between GPT-4o, Claude, and open-source Llama 3.1 with a single env var change</div>
+        </div>
+        <div class="decision-row">
+            <div class="decision-label">Category-specific prompts</div>
+            <div class="decision-text">PWN and WEB challenges need different knowledge — prompts are tailored per category</div>
+        </div>
+        <div class="decision-row">
+            <div class="decision-label">Subprocess sandboxing</div>
+            <div class="decision-text">Exploit code runs in isolated processes with timeouts to prevent agent self-compromise</div>
+        </div>
+        <div class="decision-row">
+            <div class="decision-label">Automatic flag detection</div>
+            <div class="decision-text">Regex <code>UCSI26\{...\}</code> scans all tool outputs — agent stops immediately on match</div>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║      SLIDE 12 — TECH STACK            ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #58a6ff;">Technology Stack</h2>
+    <br>
+    <table class="tech-table">
+        <thead>
+            <tr><th>Category</th><th>Technology</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Language</td><td>Python 3.11+</td></tr>
+            <tr><td>Agent Framework</td><td>LangGraph + LangChain</td></tr>
+            <tr><td>LLM (Cloud)</td><td>OpenAI GPT-4o, Anthropic Claude</td></tr>
+            <tr><td>LLM (Open Source)</td><td>Llama 3.1 via Ollama / Groq</td></tr>
+            <tr><td>Binary Analysis</td><td>radare2 + r2pipe</td></tr>
+            <tr><td>Exploit Dev</td><td>pwntools</td></tr>
+            <tr><td>Web Exploitation</td><td>requests + aiohttp</td></tr>
+            <tr><td>CLI Interface</td><td>Rich + Click</td></tr>
+            <tr><td>Configuration</td><td>python-dotenv</td></tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║      SLIDE 15 — RESULTS SUMMARY       ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #3fb950;">Results</h2>
+    <br>
+    <table class="results-table">
+        <thead>
+            <tr><th>#</th><th>Challenge</th><th>Category</th><th>Technique</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Grimoire Heap</td>
+                <td><span class="badge pwn">PWN</span></td>
+                <td>UAF + tcache poisoning</td>
+                <td><span class="badge solved">✓ Solved</span></td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>Sandworm VM</td>
+                <td><span class="badge pwn">PWN</span></td>
+                <td>VM OOB escape</td>
+                <td><span class="badge solved">✓ Solved</span></td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>Saturn Exchange</td>
+                <td><span class="badge web">WEB</span></td>
+                <td>Async race condition</td>
+                <td><span class="badge solved">✓ Solved</span></td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>Pony Express 500</td>
+                <td><span class="badge web">WEB</span></td>
+                <td>Handlebars AST injection</td>
+                <td><span class="badge solved">✓ Solved</span></td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>Temporary</td>
+                <td><span class="badge web">WEB</span></td>
+                <td>Path traversal + templates</td>
+                <td><span class="badge solved">✓ Solved</span></td>
+            </tr>
+            <tr>
+                <td>6</td>
+                <td>OldStock Router</td>
+                <td><span class="badge firm">FIRM</span></td>
+                <td>Firmware SquashFS extract</td>
+                <td><span class="badge solved">✓ Solved</span></td>
+            </tr>
+            <tr>
+                <td>7</td>
+                <td>StaffDesk</td>
+                <td><span class="badge web">WEB</span></td>
+                <td>GraphQL IDOR + Account Reset</td>
+                <td><span class="badge solved">✓ Solved</span></td>
+            </tr>
+            <tr>
+                <td>8</td>
+                <td>Cerberus Reports</td>
+                <td><span class="badge web">WEB</span></td>
+                <td>Java Deserialization + SUID</td>
+                <td><span class="badge solved">✓ Solved</span></td>
+            </tr>
+        </tbody>
+    </table>
+    <br>
+    <p style="color: #3fb950; font-size: 1.2em; font-weight: bold;">
+        8/8 Challenges Solved ✨
+    </p>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║    SLIDE 14 — FUTURE IMPROVEMENTS     ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #58a6ff;">Future Improvements</h2>
+    <br>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.2em; max-width: 800px; margin: 0 auto;">
+        <div class="future-card">
+            <h4>🐳 Docker Isolation</h4>
+            <p>Run exploits in containers for full sandboxing</p>
+        </div>
+        <div class="future-card">
+            <h4>🧠 Memory Management</h4>
+            <p>Summarize old context for longer conversations</p>
+        </div>
+        <div class="future-card">
+            <h4>👥 Multi-Agent</h4>
+            <p>Parallel sub-agents for different analysis tracks</p>
+        </div>
+        <div class="future-card">
+            <h4>📚 Pattern Learning</h4>
+            <p>Store successful exploits for similar future challenges</p>
+        </div>
+        <div class="future-card">
+            <h4>🔬 GDB Integration</h4>
+            <p>Dynamic analysis with breakpoints and memory inspection</p>
+        </div>
+        <div class="future-card">
+            <h4>🔐 Crypto Tools</h4>
+            <p>Add cryptanalysis toolkit for CRYPTO challenges</p>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║        SLIDE 15 — THANK YOU           ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="linear-gradient(135deg, #0d1117 0%, #161b22 50%, #0d1117 100%)">
+    <div style="margin-bottom: 1em;">
+        <span style="font-size: 3em;">🚩</span>
+    </div>
+    <h1 style="font-size: 2em; background: linear-gradient(90deg, #58a6ff, #bc8cff, #f778ba); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        Thank You
+    </h1>
+    <br>
+    <p style="color: #8b949e; font-size: 1.1em;">Questions?</p>
+    <br>
+    <div style="color: #484f58; font-size: 0.8em;">
+        <p>UCSI Agentic AI CTF Hackathon 2026</p>
+        <p style="margin-top: 0.5em;">
+            <span style="color: #3fb950;">8 flags captured</span> &nbsp;•&nbsp;
+            <span style="color: #58a6ff;">2 PWN</span> &nbsp;•&nbsp;
+            <span style="color: #f778ba;">5 WEB</span> &nbsp;•&nbsp;
+            <span style="color: #bc8cff;">1 FIRM</span>
+        </p>
+    </div>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/highlight.js"></script>
+<script>
+    Reveal.initialize({
+        hash: true,
+        slideNumber: true,
+        transition: 'slide',
+        backgroundTransition: 'fade',
+        plugins: [RevealHighlight],
+        width: 1200,
+        height: 700,
+    });
+</script>
+</body>
+</html>

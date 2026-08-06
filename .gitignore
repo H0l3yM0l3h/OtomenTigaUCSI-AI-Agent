@@ -1,0 +1,46 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# Environment variables (API keys)
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Challenge binaries (too large for git)
+*.bin
+*.elf
+challenge_files/
+
+# Temporary
+tmp/
+scratch/
+
+# Reference repos (not ours)
+reference/
+
+# Output
+output/
