@@ -14,10 +14,10 @@ Architecture:
 Usage:
     from agent import CTFAgent
     agent = CTFAgent()
-    result = agent.solve(challenge_description="...", category="pwn")
+    result = agent.solve(challenge="...", category="pwn")
 """
 
 from agent.core import CTFAgent
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 __all__ = ["CTFAgent"]

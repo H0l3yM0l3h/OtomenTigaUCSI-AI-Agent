@@ -1,18 +1,18 @@
 # UCSI Agentic AI CTF 2026 — Challenge Writeups
 
-> Detailed writeups for all challenges solved by our AI agent harness.
+> Technical record of the nine-capture OtomenTiga competition portfolio.
 
 ---
 
-## Submission Checklist
+## Repository Artifacts
 
-Use the exact fields below in the final submission package and replace the bracketed values with the real team details.
+- **Team:** OtomenTiga
+- **Repository:** https://github.com/H0l3yM0l3h/OtomenTigaUCSI-AI-Agent
+- **Agent architecture:** [`architecture.md`](architecture.md)
+- **Replay evidence:** eight deterministic modules in [`../solvers/`](../solvers/)
+- **Technology:** Python, LangGraph, LangChain, OpenAI, Anthropic, Ollama, Groq, radare2/r2pipe, pwntools, requests, aiohttp, Rich, and python-dotenv
 
-1. Team Name — OtomenTiga
-2. GitHub Repository Link — https://github.com/H0l3yM0l3h
-3. Team Leader Account — Uploaded from the registered team leader's GitHub account
-4. Presentation Slides / Documentation / Writeup — [PDF or PowerPoint slide deck plus writeup]
-5. Technology Stack — Python, LangGraph, LangChain, OpenAI, Anthropic, Ollama, Groq, radare2, r2pipe, pwntools, requests, aiohttp, Rich, Click, python-dotenv
+The canonical portfolio records nine captures. Eight include deterministic replay modules; Helios Metadata Broker is retained as a documented capture and is not presented as a runnable solver.
 
 ---
 
@@ -26,6 +26,7 @@ Use the exact fields below in the final submission package and replace the brack
 6. [OldStock Router (FIRMWARE)](#6-oldstock-router--firmware)
 7. [StaffDesk (WEB)](#7-staffdesk--web)
 8. [Cerberus Reports (WEB)](#8-cerberus-reports--web)
+9. [Helios Metadata Broker (WEB)](#9-helios-metadata-broker--web)
 
 ---
 
@@ -436,6 +437,46 @@ The agent:
 
 ---
 
+## 9. Helios Metadata Broker — WEB
+
+**Flag:** `UCSI26{helios_imds_creds_pivot_e611b736}`
+
+### Challenge Description
+
+Helios exposes a fetch service intended to retrieve content only through an approved edge endpoint. The goal is to reach protected internal metadata, obtain the instance-role credential, and use that identity to access the internal administration path.
+
+### Vulnerability: Redirect-Based SSRF and Final-Destination Validation Failure
+
+The fetch service validates the initial URL against an allow list. The approved edge endpoint can then return an unrestricted `302` redirect through its `target` parameter. Helios automatically follows that redirect but does not apply the allow-list policy again to the final destination.
+
+This creates a time-of-check/time-of-use gap in URL policy enforcement: the URL that passes validation is not the URL that ultimately receives the server-side request.
+
+### Exploitation Steps
+
+1. Supply the allow-listed edge URL to the Helios `/fetch` endpoint.
+2. Configure the edge redirect target as the instance metadata address at `169.254.169.254`.
+3. Use the server-side redirect chain to enumerate the attached instance-role metadata.
+4. Retrieve the temporary role credential from the metadata service.
+5. Present that credential to the internal administration path.
+6. Read the protected flag from the authorized internal response.
+
+```text
+Attacker
+  → Helios /fetch
+  → allow-listed edge
+  → 302 redirect
+  → instance metadata service
+  → role credential
+  → internal admin
+  → flag
+```
+
+### Agent Approach
+
+The investigation separated the URL policy decision from the actual redirect destination, tested redirect following, pivoted from the metadata endpoint to the role credential, and reused that identity against the internal service. The repository records the verified chain and flag as writeup evidence. A deterministic replay module is not included, so the CLI intentionally refuses `solver helios` instead of claiming unsupported reproducibility.
+
+---
+
 ## Root Cause Summary
 
 | Challenge | Root Cause | Fix |
@@ -448,3 +489,4 @@ The agent:
 | OldStock Router | Leaked router configuration backup in SquashFS rootfs | Remove configuration backup files from production firmware images |
 | StaffDesk | Insecure direct object reference exposing `resetToken` | Enforce access checks on `user(id)` query and omit reset tokens from public profiles |
 | Cerberus Reports | Insecure prefix-based polymorphic type validator & SUID wildcard tar execution | Enforce strict class validation lists and avoid running wildcard tar commands inside user-writable directories |
+| Helios Metadata Broker | Initial URL is allow-listed, but the post-redirect destination is not revalidated | Disable redirects or validate every redirect hop and final resolved address; block link-local and private ranges |

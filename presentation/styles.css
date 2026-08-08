@@ -177,6 +177,22 @@
     background: rgba(255, 255, 255, 0.03);
 }
 
+/* Submission summary: nine rows must remain visible on a standard slide. */
+.compact-results {
+    font-size: 0.52em;
+    line-height: 1.1;
+}
+
+.compact-results th,
+.compact-results td {
+    padding: 0.32em 0.7em;
+}
+
+.compact-results th:last-child,
+.compact-results td:last-child {
+    display: none;
+}
+
 /* ── Badges ────────────────────────────────────────── */
 
 .badge {

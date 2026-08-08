@@ -3,7 +3,7 @@ Agent Tool Suite.
 
 Provides LangChain-compatible tools for CTF challenge solving:
   - binary_analysis: Decompile, disassemble, and analyze ELF binaries
-  - code_executor: Run Python exploit scripts in a sandboxed subprocess
+  - code_executor: Run Python exploit scripts in a bounded subprocess
   - network_client: TCP/UDP interaction with challenge services
   - web_tools: HTTP requests, race condition exploitation
   - file_tools: File I/O, hex encoding/decoding

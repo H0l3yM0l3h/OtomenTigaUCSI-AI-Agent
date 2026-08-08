@@ -2,10 +2,10 @@
 LLM Provider Abstraction Layer.
 
 Provides a unified interface to multiple LLM backends:
-  - OpenAI (GPT-4o, GPT-4o-mini)
-  - Anthropic (Claude 3.5 Sonnet, Claude Opus)
-  - Ollama (Llama 3.1, DeepSeek Coder, Mistral — local inference)
-  - Groq (Llama 3.1 70B — fast cloud inference for open-source models)
+  - OpenAI (GPT-5.6 family)
+  - Anthropic (Claude 5 family)
+  - Ollama (Qwen 3, Devstral, Llama 4 — local inference)
+  - Groq (GPT-OSS — fast hosted open-weight inference)
 
 The provider is selected via the LLM_PROVIDER and LLM_MODEL env vars.
 """
@@ -66,12 +66,19 @@ def _build_openai(model: str, temperature: float, **kwargs) -> BaseChatModel:
         )
     from langchain_openai import ChatOpenAI
 
-    return ChatOpenAI(
-        model=model,
-        temperature=temperature,
-        api_key=config.openai_api_key,
+    options = {
+        "model": model,
+        "api_key": config.openai_api_key,
         **kwargs,
-    )
+    }
+    if model.startswith("gpt-5.6"):
+        # Current OpenAI guidance recommends the Responses API for agentic,
+        # multi-turn tool use. Leave temperature unset for reasoning models.
+        options.setdefault("use_responses_api", True)
+        options.setdefault("reasoning_effort", "medium")
+    else:
+        options.setdefault("temperature", temperature)
+    return ChatOpenAI(**options)
 
 
 def _build_anthropic(model: str, temperature: float, **kwargs) -> BaseChatModel:
@@ -126,8 +133,8 @@ def _build_groq(model: str, temperature: float, **kwargs) -> BaseChatModel:
 def list_supported_providers() -> dict[str, list[str]]:
     """Return a dict of providers and their recommended models."""
     return {
-        "openai": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"],
-        "anthropic": ["claude-sonnet-4-20250514", "claude-opus-4-20250514"],
-        "ollama": ["llama3.1:70b", "deepseek-coder-v2", "mistral"],
-        "groq": ["llama-3.1-70b-versatile", "llama-3.1-8b-instant"],
+        "openai": ["gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna"],
+        "anthropic": ["claude-sonnet-5", "claude-opus-5", "claude-fable-5"],
+        "ollama": ["qwen3", "devstral", "llama4"],
+        "groq": ["openai/gpt-oss-120b", "openai/gpt-oss-20b"],
     }

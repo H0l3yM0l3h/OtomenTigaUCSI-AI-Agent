@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/reveal.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/dist/theme/black.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5.1.0/plugin/highlight/monokai.css">
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20260806-helios9">
 </head>
 <body>
 <div class="reveal">
@@ -29,7 +29,7 @@
         Autonomous CTF Challenge Solving with AI Agents
     </p>
     <p style="color: #484f58; font-size: 0.7em; margin-top: 2em;">
-        8 Challenges Solved &nbsp;•&nbsp; 2 PWN &nbsp;•&nbsp; 5 WEB &nbsp;•&nbsp; 1 Firmware
+        9 Challenges Solved &nbsp;•&nbsp; 2 PWN &nbsp;•&nbsp; 6 WEB &nbsp;•&nbsp; 1 Firmware
     </p>
     <div style="max-width: 760px; margin: 1.5em auto 0; padding: 1em 1.2em; border: 1px solid rgba(88,166,255,0.35); border-radius: 14px; background: rgba(13,17,23,0.72); text-align: left; font-size: 0.55em; line-height: 1.7; color: #c9d1d9;">
         <div style="color: #58a6ff; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.35em;">Submission details</div>
@@ -68,7 +68,7 @@
         <br>
         <div class="card">
             <h4>🏁 Scope</h4>
-            <p><strong>PWN</strong> (binary exploitation) and <strong>WEB</strong> (web exploitation) categories</p>
+            <p><strong>PWN</strong> (binary exploitation), <strong>WEB</strong> (web exploitation), and <strong>FIRMWARE</strong> analysis</p>
         </div>
     </div>
 </section>
@@ -585,6 +585,45 @@ touch "--checkpoint-action=exec=sh pwn.sh"
 </section>
 
 <!-- ╔═══════════════════════════════════════╗ -->
+<!-- ║     SLIDE 15 — CHALLENGE 9: HELIOS    ║ -->
+<!-- ╚═══════════════════════════════════════╝ -->
+<section data-background="#0d1117">
+    <h2 style="color: #f778ba; font-size: 0.95em; margin-bottom: 0.25em;">Challenge 9: Helios Metadata Broker</h2>
+    <p style="color: #8b949e; font-size: 0.58em; margin: 0;">WEB — Redirect-Based SSRF &amp; IMDS Credential Pivot</p>
+    <div style="display: flex; gap: 2em; align-items: flex-start; justify-content: center; flex-wrap: nowrap; max-width: 740px; margin: 1em auto 0; position: relative; left: -25px;">
+        <div style="text-align: left; width: 370px;">
+            <h4 style="color: #58a6ff; font-size: 0.75em; margin: 0 0 0.45em;">Vulnerability</h4>
+            <ul style="font-size: 0.55em; line-height: 1.25; margin: 0;">
+                <li><code>/fetch</code> approves the original allow-listed edge URL</li>
+                <li>The edge returns an unrestricted <code>302</code> to <code>?target=</code></li>
+                <li>Helios follows the redirect without validating the final destination</li>
+            </ul>
+            <h4 style="color: #58a6ff; font-size: 0.75em; margin: 0.8em 0 0.35em;">Exploit Path</h4>
+            <div style="font-family: 'JetBrains Mono', 'Fira Code', Consolas, monospace; font-size: 0.52em; line-height: 1.5; color: #c9d1d9; background: #161b22; padding: 0.75em 0.9em; border-radius: 8px;">
+                Edge → IMDS → role token → internal admin → flag
+            </div>
+        </div>
+        <div style="text-align: left; width: 300px;">
+            <h4 style="color: #58a6ff; font-size: 0.75em; margin: 0 0 0.45em;">SSRF Pivot</h4>
+            <pre style="font-size: 0.43em; background: #161b22; padding: 0.8em; border-radius: 8px; margin: 0;"><code>Attacker
+  → Helios /fetch
+  → allow-listed edge
+  → 302 redirect
+  → 169.254.169.254 IMDS
+  → instance-role token
+  → internal admin
+  → flag</code></pre>
+            <p style="font-size: 0.5em; line-height: 1.25; color: #c9d1d9; margin: 0.7em 0;">
+                <strong style="color: #bc8cff;">Root cause:</strong> the security decision is made before redirects are followed; the final destination is never checked.
+            </p>
+            <div class="flag-box" style="font-size: 0.48em; padding: 0.55em 0.7em;">
+                🚩 UCSI26{helios_imds_creds_pivot_e611b736}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ╔═══════════════════════════════════════╗ -->
 <!-- ║  SLIDE 15 — DOCKER SANDBOX ISOLATION  ║ -->
 <!-- ╚═══════════════════════════════════════╝ -->
 <section data-background="#0d1117">
@@ -724,7 +763,7 @@ touch "--checkpoint-action=exec=sh pwn.sh"
 <section data-background="#0d1117">
     <h2 style="color: #3fb950;">Results</h2>
     <br>
-    <table class="results-table">
+    <table class="results-table compact-results">
         <thead>
             <tr><th>#</th><th>Challenge</th><th>Category</th><th>Technique</th><th>Status</th></tr>
         </thead>
@@ -785,11 +824,18 @@ touch "--checkpoint-action=exec=sh pwn.sh"
                 <td>Java Deserialization + SUID</td>
                 <td><span class="badge solved">✓ Solved</span></td>
             </tr>
+            <tr>
+                <td>9</td>
+                <td>Helios Metadata Broker</td>
+                <td><span class="badge web">WEB</span></td>
+                <td>Redirect SSRF + IMDS pivot</td>
+                <td><span class="badge solved">✓ Solved</span></td>
+            </tr>
         </tbody>
     </table>
     <br>
-    <p style="color: #3fb950; font-size: 1.2em; font-weight: bold;">
-        8/8 Challenges Solved ✨
+    <p style="color: #3fb950; font-size: 0.9em; font-weight: bold; margin-top: 0.45em;">
+        9/9 Challenges Solved ✨
     </p>
 </section>
 
@@ -843,9 +889,9 @@ touch "--checkpoint-action=exec=sh pwn.sh"
     <div style="color: #484f58; font-size: 0.8em;">
         <p>UCSI Agentic AI CTF Hackathon 2026</p>
         <p style="margin-top: 0.5em;">
-            <span style="color: #3fb950;">8 flags captured</span> &nbsp;•&nbsp;
+            <span style="color: #3fb950;">9 flags captured</span> &nbsp;•&nbsp;
             <span style="color: #58a6ff;">2 PWN</span> &nbsp;•&nbsp;
-            <span style="color: #f778ba;">5 WEB</span> &nbsp;•&nbsp;
+            <span style="color: #f778ba;">6 WEB</span> &nbsp;•&nbsp;
             <span style="color: #bc8cff;">1 FIRM</span>
         </p>
     </div>

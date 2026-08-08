@@ -18,6 +18,14 @@ if _env_path.exists():
     load_dotenv(_env_path)
 
 
+def _read_max_iterations() -> int:
+    """Parse MAX_ITERATIONS without making configuration import fail."""
+    try:
+        return int(os.getenv("MAX_ITERATIONS", "25"))
+    except ValueError:
+        return 0
+
+
 @dataclass
 class Config:
     """Central configuration for the CTF agent."""
@@ -27,7 +35,7 @@ class Config:
         default_factory=lambda: os.getenv("LLM_PROVIDER", "openai")
     )
     llm_model: str = field(
-        default_factory=lambda: os.getenv("LLM_MODEL", "gpt-4o")
+        default_factory=lambda: os.getenv("LLM_MODEL", "gpt-5.6-terra")
     )
 
     # ── API Keys ──
@@ -48,7 +56,7 @@ class Config:
 
     # ── Agent Behavior ──
     max_iterations: int = field(
-        default_factory=lambda: int(os.getenv("MAX_ITERATIONS", "25"))
+        default_factory=_read_max_iterations
     )
     verbose: bool = field(
         default_factory=lambda: os.getenv("VERBOSE", "true").lower() == "true"
@@ -66,11 +74,18 @@ class Config:
     def validate(self) -> list[str]:
         """Return a list of configuration warnings/errors."""
         issues = []
-        if self.llm_provider == "openai" and not self.openai_api_key:
+        provider = self.llm_provider.lower().strip()
+        if provider not in {"openai", "anthropic", "ollama", "groq"}:
+            issues.append(f"unsupported LLM_PROVIDER: {self.llm_provider}")
+        if not self.llm_model.strip():
+            issues.append("LLM_MODEL is empty")
+        if self.max_iterations < 1:
+            issues.append("MAX_ITERATIONS must be a positive integer")
+        if provider == "openai" and not self.openai_api_key:
             issues.append("OPENAI_API_KEY is not set")
-        elif self.llm_provider == "anthropic" and not self.anthropic_api_key:
+        elif provider == "anthropic" and not self.anthropic_api_key:
             issues.append("ANTHROPIC_API_KEY is not set")
-        elif self.llm_provider == "groq" and not self.groq_api_key:
+        elif provider == "groq" and not self.groq_api_key:
             issues.append("GROQ_API_KEY is not set")
         return issues
 

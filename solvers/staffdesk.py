@@ -149,7 +149,6 @@ def solve():
 
     if not admin_token:
         print("[!] Failed to hijack admin session.")
-        print("[*] Flag (from prior solve): UCSI26{gr4phql_1d0r_2_admin_t4k30v3r}")
         return None
 
     # Step 3: Fetch the flag
@@ -179,7 +178,6 @@ def solve():
     except Exception as e:
         print(f"[!] Flag retrieval failed: {e}")
 
-    print("[*] Flag (from prior solve): UCSI26{gr4phql_1d0r_2_admin_t4k30v3r}")
     return None
 
 if __name__ == "__main__":

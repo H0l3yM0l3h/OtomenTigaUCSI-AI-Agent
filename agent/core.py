@@ -21,11 +21,12 @@ a flag is found or the maximum iteration count is reached.
 
 from __future__ import annotations
 
-import json
+import time
+from pathlib import Path
 from typing import Annotated, TypedDict, Sequence, Literal
-from datetime import datetime
+from uuid import uuid4
 
-from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, AIMessage
+from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, ToolMessage
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
 
@@ -33,7 +34,6 @@ from agent.llm import get_llm
 from agent.prompts import SYSTEM_PROMPT, get_prompt_for_category
 from agent.tools import ALL_TOOLS
 from agent.utils import (
-    contains_flag,
     extract_flags,
     print_banner,
     print_flag_found,
@@ -57,6 +57,19 @@ class AgentState(TypedDict):
     iteration: int
     max_iterations: int
     status: str  # "running", "solved", "failed"
+
+
+def _tool_observed_flags(messages: Sequence[BaseMessage]) -> list[str]:
+    """Extract unique flags only from executed tool observations."""
+    observed: list[str] = []
+    for message in messages:
+        if not isinstance(message, ToolMessage):
+            continue
+        content = message.content if isinstance(message.content, str) else str(message.content)
+        for flag in extract_flags(content):
+            if flag not in observed:
+                observed.append(flag)
+    return observed
 
 
 # ─── CTF Agent Class ──────────────────────────────────────────────────
@@ -95,9 +108,11 @@ class CTFAgent:
         """
         self.verbose = verbose if verbose is not None else config.verbose
         self.logger = setup_logging(self.verbose)
+        self.provider = (provider or config.llm_provider).lower()
+        self.model = model or config.llm_model
 
         # Build the LLM with tool-calling support
-        self.llm = get_llm(provider=provider, model=model)
+        self.llm = get_llm(provider=self.provider, model=self.model)
         self.llm_with_tools = self.llm.bind_tools(ALL_TOOLS)
 
         # Build the agent graph
@@ -137,13 +152,24 @@ class CTFAgent:
         conversation history and decides whether to call a tool or
         provide a final answer.
         """
+        messages = list(state["messages"])
+        observed_flags = _tool_observed_flags(messages)
+        if observed_flags:
+            if self.verbose:
+                for flag in observed_flags:
+                    console.print(f"  [bold green]✓ Tool evidence verified:[/] {flag}")
+            return {
+                "messages": [],
+                "flags_found": observed_flags,
+                "status": "solved",
+            }
+
         iteration = state.get("iteration", 0) + 1
 
         if self.verbose:
             print_step(iteration, "Reasoning", "LLM is analyzing...")
 
         # Call the LLM
-        messages = list(state["messages"])
         response = self.llm_with_tools.invoke(messages)
 
         if self.verbose:
@@ -160,20 +186,20 @@ class CTFAgent:
                     )
                     print_tool_call(tc["name"], args_str)
 
-        # Check for flags in the response
-        flags = []
+        # A model response is not evidence. Flag-shaped text is accepted only
+        # after it has appeared in a ToolMessage from an executed action.
+        model_flags = []
         if hasattr(response, "content") and response.content:
             content = response.content if isinstance(response.content, str) else str(response.content)
-            flags = extract_flags(content)
-
-        new_flags = state.get("flags_found", []) + flags
-        status = "solved" if new_flags else state.get("status", "running")
+            model_flags = extract_flags(content)
+        if model_flags and self.verbose:
+            console.print("  [yellow]Flag-shaped model text ignored until a tool observation verifies it.[/]")
 
         return {
             "messages": [response],
             "iteration": iteration,
-            "flags_found": new_flags,
-            "status": status,
+            "flags_found": state.get("flags_found", []),
+            "status": state.get("status", "running"),
         }
 
     def _should_continue(self, state: AgentState) -> Literal["tools", "end"]:
@@ -216,8 +242,35 @@ class CTFAgent:
             max_iterations: Override max iterations for this solve.
 
         Returns:
-            A dict with keys: 'flags', 'status', 'iterations', 'transcript'.
+            A structured dict with the run ID, status, tool-verified flags,
+            iteration count, category, provider, model, and elapsed time.
         """
+        challenge = challenge.strip()
+        category = category.lower().strip()
+        if not challenge:
+            raise ValueError("challenge description cannot be empty")
+        if category not in {"pwn", "web", "rev", "crypto", "misc"}:
+            raise ValueError(f"unsupported challenge category: {category}")
+        if bool(target_host) != bool(target_port):
+            raise ValueError("target_host and target_port must be provided together")
+        if target_port is not None and not 1 <= target_port <= 65_535:
+            raise ValueError("target_port must be between 1 and 65535")
+
+        iteration_limit = max_iterations if max_iterations is not None else config.max_iterations
+        if not isinstance(iteration_limit, int) or iteration_limit < 1:
+            raise ValueError("max_iterations must be a positive integer")
+
+        normalized_files: list[str] = []
+        for file_path in files or []:
+            path = Path(file_path).expanduser().resolve()
+            if not path.is_file():
+                raise ValueError(f"challenge file not found: {file_path}")
+            normalized_files.append(str(path))
+        files = normalized_files or None
+
+        run_id = uuid4().hex[:12]
+        started_at = time.perf_counter()
+
         if self.verbose:
             print_banner()
             console.print()
@@ -263,7 +316,7 @@ class CTFAgent:
             "category": category,
             "flags_found": [],
             "iteration": 0,
-            "max_iterations": max_iterations or config.max_iterations,
+            "max_iterations": iteration_limit,
             "status": "running",
         }
 
@@ -281,6 +334,8 @@ class CTFAgent:
         # Extract results
         flags = final_state.get("flags_found", [])
         status = "solved" if flags else final_state.get("status", "failed")
+        if status == "running":
+            status = "failed"
         iterations = final_state.get("iteration", 0)
 
         if self.verbose:
@@ -299,10 +354,15 @@ class CTFAgent:
             console.print()
 
         return {
+            "run_id": run_id,
             "flags": flags,
             "status": status,
             "iterations": iterations,
             "category": category,
+            "provider": self.provider,
+            "model": self.model,
+            "evidence_source": "tool_observation" if flags else None,
+            "duration_seconds": round(time.perf_counter() - started_at, 3),
         }
 
     def solve_with_script(

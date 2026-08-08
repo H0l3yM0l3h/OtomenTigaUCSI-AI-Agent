@@ -43,12 +43,8 @@ def solve():
 
     if not fw_path or not os.path.exists(fw_path):
         print(f"[!] Firmware binary '{FIRMWARE_NAME}' not found in workspace.")
-        print("[*] Running firmware simulation check...")
-        print("[*] SquashFS Superblock Offset: 0x100 (256 bytes)")
-        print("[*] Extraction target file: etc/config/rconfig.bak")
-        print()
-        print("[+] FLAG FOUND: UCSI26{0ld5t0ck_fw_b4ckup_l34k}")
-        return "UCSI26{0ld5t0ck_fw_b4ckup_l34k}"
+        print("[*] Supply the original challenge image to perform a verified replay.")
+        return None
 
     print(f"[*] Found firmware image at: {fw_path}")
     print("[*] Extracting SquashFS superblock at offset 256...")
@@ -102,7 +98,6 @@ def solve():
 
     print()
     print("[!] Target files not successfully extracted.")
-    print("[*] Flag (from prior solve): UCSI26{0ld5t0ck_fw_b4ckup_l34k}")
     return None
 
 if __name__ == "__main__":

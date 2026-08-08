@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640" role="img" aria-labelledby="title desc">
+  <title id="title">OtomenTiga Agentic AI CTF Champion Project</title>
+  <desc id="desc">A dark cyber-themed banner showing the agent workflow Reason, Act, Prove, Replay and project metrics.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#070B18"/>
+      <stop offset="0.56" stop-color="#0C1530"/>
+      <stop offset="1" stop-color="#160B2F"/>
+    </linearGradient>
+    <linearGradient id="energy" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#38BDF8"/>
+      <stop offset="0.52" stop-color="#818CF8"/>
+      <stop offset="1" stop-color="#C084FC"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#6366F1" stop-opacity=".34"/>
+      <stop offset="1" stop-color="#6366F1" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#93C5FD" stroke-opacity=".07" stroke-width="1"/>
+    </pattern>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1280" height="640" rx="28" fill="url(#bg)"/>
+  <rect x="1" y="1" width="1278" height="638" rx="27" fill="none" stroke="#A5B4FC" stroke-opacity=".24" stroke-width="2"/>
+  <rect width="1280" height="640" rx="28" fill="url(#grid)"/>
+  <circle cx="1035" cy="292" r="350" fill="url(#glow)"/>
+  <path d="M0 495C235 440 352 560 584 506S970 384 1280 454V640H0Z" fill="#111A3B" fill-opacity=".58"/>
+  <path d="M0 506C250 445 359 574 594 515S970 395 1280 466" fill="none" stroke="url(#energy)" stroke-opacity=".28" stroke-width="2"/>
+
+  <g transform="translate(72 62)">
+    <rect width="298" height="38" rx="19" fill="#FBBF24" fill-opacity=".12" stroke="#FBBF24" stroke-opacity=".55"/>
+    <circle cx="21" cy="19" r="6" fill="#FBBF24" filter="url(#softGlow)"/>
+    <text x="39" y="25" fill="#FDE68A" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="15" font-weight="700" letter-spacing="2">CHAMPION PROJECT · UCSI 2026</text>
+
+    <text x="0" y="104" fill="#E0E7FF" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="22" font-weight="700" letter-spacing="5">TEAM OTOMENTIGA</text>
+    <text x="0" y="176" fill="#FFFFFF" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="58" font-weight="800">AGENTIC AI</text>
+    <text x="0" y="238" fill="url(#energy)" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="58" font-weight="800">CTF HARNESS</text>
+    <text x="2" y="286" fill="#A5B4FC" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="24">Reason. Act. Prove. Replay.</text>
+
+    <g transform="translate(0 338)" font-family="Inter,Segoe UI,Arial,sans-serif">
+      <g>
+        <text y="32" fill="#FFFFFF" font-size="34" font-weight="800">9</text>
+        <text y="57" fill="#94A3B8" font-size="15" letter-spacing="1.3">CAPTURES</text>
+      </g>
+      <path d="M126 3V61" stroke="#64748B" stroke-opacity=".42"/>
+      <g transform="translate(158)">
+        <text y="32" fill="#FFFFFF" font-size="34" font-weight="800">13</text>
+        <text y="57" fill="#94A3B8" font-size="15" letter-spacing="1.3">AGENT TOOLS</text>
+      </g>
+      <path d="M323 3V61" stroke="#64748B" stroke-opacity=".42"/>
+      <g transform="translate(355)">
+        <text y="32" fill="#FFFFFF" font-size="34" font-weight="800">4</text>
+        <text y="57" fill="#94A3B8" font-size="15" letter-spacing="1.3">LLM PROVIDERS</text>
+      </g>
+    </g>
+  </g>
+
+  <g transform="translate(678 110)" font-family="Inter,Segoe UI,Arial,sans-serif">
+    <path d="M76 112H170M250 112H344M424 112H518" stroke="url(#energy)" stroke-width="3" stroke-linecap="round"/>
+    <path d="M158 105L170 112L158 119M332 105L344 112L332 119M506 105L518 112L506 119" fill="none" stroke="#A5B4FC" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <g>
+      <rect x="0" y="54" width="76" height="116" rx="18" fill="#111B39" stroke="#38BDF8" stroke-opacity=".68"/>
+      <circle cx="38" cy="86" r="9" fill="#38BDF8" filter="url(#softGlow)"/>
+      <text x="38" y="130" text-anchor="middle" fill="#E0F2FE" font-size="14" font-weight="800">INPUT</text>
+      <text x="38" y="151" text-anchor="middle" fill="#64748B" font-size="10">PROMPT</text>
+    </g>
+    <g>
+      <rect x="170" y="40" width="80" height="144" rx="20" fill="#172554" stroke="#60A5FA" stroke-opacity=".82"/>
+      <text x="210" y="91" text-anchor="middle" fill="#BFDBFE" font-size="22" font-weight="900">01</text>
+      <text x="210" y="124" text-anchor="middle" fill="#FFFFFF" font-size="14" font-weight="800">REASON</text>
+      <text x="210" y="147" text-anchor="middle" fill="#93C5FD" font-size="10">LANGGRAPH</text>
+    </g>
+    <g>
+      <rect x="344" y="40" width="80" height="144" rx="20" fill="#1E1B4B" stroke="#818CF8" stroke-opacity=".82"/>
+      <text x="384" y="91" text-anchor="middle" fill="#C7D2FE" font-size="22" font-weight="900">02</text>
+      <text x="384" y="124" text-anchor="middle" fill="#FFFFFF" font-size="14" font-weight="800">ACT</text>
+      <text x="384" y="147" text-anchor="middle" fill="#A5B4FC" font-size="10">13 TOOLS</text>
+    </g>
+    <g>
+      <rect x="518" y="40" width="80" height="144" rx="20" fill="#2E1065" stroke="#C084FC" stroke-opacity=".82"/>
+      <text x="558" y="91" text-anchor="middle" fill="#E9D5FF" font-size="22" font-weight="900">03</text>
+      <text x="558" y="124" text-anchor="middle" fill="#FFFFFF" font-size="14" font-weight="800">PROVE</text>
+      <text x="558" y="147" text-anchor="middle" fill="#D8B4FE" font-size="10">EVIDENCE</text>
+    </g>
+
+    <path d="M558 184V245Q558 271 532 271H236Q210 271 210 245V184" fill="none" stroke="url(#energy)" stroke-opacity=".78" stroke-width="3" stroke-dasharray="7 8"/>
+    <rect x="304" y="239" width="160" height="62" rx="31" fill="#0F172A" stroke="#A78BFA" stroke-opacity=".72"/>
+    <text x="384" y="264" text-anchor="middle" fill="#FFFFFF" font-size="14" font-weight="800">REPLAY</text>
+    <text x="384" y="284" text-anchor="middle" fill="#A5B4FC" font-size="10">DETERMINISTIC SOLVER</text>
+
+    <g transform="translate(0 352)">
+      <rect width="598" height="72" rx="18" fill="#0B1228" fill-opacity=".86" stroke="#64748B" stroke-opacity=".3"/>
+      <text x="24" y="30" fill="#94A3B8" font-size="12" letter-spacing="1.2">VERIFICATION RULE</text>
+      <text x="24" y="53" fill="#E2E8F0" font-size="15" font-weight="700">A flag counts only when an executed tool returns it.</text>
+      <circle cx="557" cy="36" r="13" fill="#22C55E" fill-opacity=".16" stroke="#4ADE80"/>
+      <path d="M551 36L556 41L565 31" fill="none" stroke="#4ADE80" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+
+  <text x="72" y="602" fill="#64748B" font-family="Inter,Segoe UI,Arial,sans-serif" font-size="13" letter-spacing="1">github.com/H0l3yM0l3h/OtomenTigaUCSI-AI-Agent</text>
+</svg>

@@ -296,4 +296,4 @@ if __name__ == "__main__":
 
     if not flag:
         print()
-        print("[*] Flag (from prior solve): UCSI26{cve-2026-33937_h4ndl3b4rs_4st_1nj3ct10n}")
+        print("[!] Replay did not return a verified flag.")

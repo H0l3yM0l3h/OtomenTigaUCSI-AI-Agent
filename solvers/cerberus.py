@@ -129,7 +129,6 @@ def solve(target_url: str = DEFAULT_TARGET) -> str | None:
         else:
             print("[!] Flag format mismatch. Raw output:")
             print(json.dumps(result, indent=2))
-            print("[*] Flag (from prior solve): UCSI26{cerberus_gadget_privesc_8630453b}")
             return None
 
 if __name__ == "__main__":

@@ -33,11 +33,11 @@ and attack surface
 5. **VERIFY**: Extract and validate the flag (format: UCSI26{...})
 
 ## Rules
-- Always explain your reasoning before taking action
+- Before each tool call, state a concise action rationale and expected evidence
 - Write clean, well-commented exploit code
 - If an approach fails, analyze why and try an alternative
 - The flag format is: UCSI26{...}
-- Never fabricate flags — only report flags obtained from the challenge
+- Never fabricate flags — only report flags returned by an executed tool
 - Use pwntools for binary exploitation challenges
 - Use requests/aiohttp for web challenges
 - Be methodical and thorough in your analysis

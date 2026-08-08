@@ -184,4 +184,4 @@ if __name__ == "__main__":
 
     if not flag:
         print()
-        print("[*] Flag (from prior solve): UCSI26{sandworm_vm_oob_escape_025a2ef7}")
+        print("[!] Replay did not return a verified flag.")

@@ -217,4 +217,4 @@ if __name__ == "__main__":
 
     if not flag:
         print()
-        print("[*] Flag (from prior solve): UCSI26{4sync_settlement_r4c3_110cbe1e}")
+        print("[!] Replay did not return a verified flag.")

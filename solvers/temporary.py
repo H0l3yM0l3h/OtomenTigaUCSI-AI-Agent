@@ -63,7 +63,6 @@ def solve():
 
     if not note_id:
         print("[!] Failed to obtain note ID.")
-        print("[*] Flag (from prior solve): UCSI26{cve-2026-44705_tmp_tr4v3rs4l_g4in_1s_f0r3v3r}")
         return None
 
     # Step 2: Render the template
@@ -91,7 +90,6 @@ def solve():
         print()
         print("[!] Flag format mismatch. Raw output:")
         print(repr(flag_output))
-        print("[*] Flag (from prior solve): UCSI26{cve-2026-44705_tmp_tr4v3rs4l_g4in_1s_f0r3v3r}")
         return None
 
 if __name__ == "__main__":

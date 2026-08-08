@@ -93,7 +93,7 @@ def print_banner():
     banner_text.append("  ╔═══════════════════════════════════════════╗\n", style="bold cyan")
     banner_text.append("  ║                                           ║\n", style="bold cyan")
     banner_text.append("  ║   ", style="bold cyan")
-    banner_text.append("UCSI Agentic AI CTF Agent v1.0", style="bold white")
+    banner_text.append("OtomenTiga CTF Agent v2.0", style="bold white")
     banner_text.append("        ║\n", style="bold cyan")
     banner_text.append("  ║   ", style="bold cyan")
     banner_text.append("Autonomous CTF Challenge Solver", style="dim white")
